@@ -7,15 +7,15 @@ export default function WorkoutForm() {
 type Exercise = {
   id: string
     name: string
-    category?: string
+    category: string
   }
 
   type Status = {
     id: string
     name: string
   }
-  const [exercises, setExercises] = useState([])
-  const [statuses, setStatuses] = useState([])
+  const [exercises, setExercises] = useState<Exercise[]>([])
+  const [statuses, setStatuses] = useState<Status[]>([])
 
   const [exercise, setExercise] = useState('')
   const [status, setStatus] = useState('')
