@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function WorkoutForm() {
@@ -15,6 +16,7 @@ export default function WorkoutForm() {
   const [exerciseOrder, setExerciseOrder] = useState('')
 
   const today = new Date().toISOString().split('T')[0]
+  const router = useRouter()
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -27,6 +29,19 @@ export default function WorkoutForm() {
   }, [])
 
   const handleSubmit = async () => {
+    // 必須項目チェック
+    if (
+      !exercise ||
+      !status ||
+      !weight ||
+      !reps ||
+      !exerciseOrder ||
+      (status === 'メイン' && !setNumber)
+    ) {
+      alert('⚠️ 必須項目が未入力です。すべて入力してください。')
+      return
+    }
+
     const { error } = await supabase.from('sets').insert([
       {
         date: today,
@@ -39,10 +54,11 @@ export default function WorkoutForm() {
         exercise_order: Number(exerciseOrder)
       }
     ])
+
     if (error) {
       alert('登録失敗: ' + error.message)
     } else {
-      alert('記録しました！')
+      alert('✅ 記録しました！')
       setExercise('')
       setStatus('')
       setWeight('')
@@ -54,46 +70,66 @@ export default function WorkoutForm() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-xl font-bold mb-4">💪 筋トレ記録</h1>
-      <p>日付: {today}</p>
+    <main className="max-w-md mx-auto p-6 space-y-6 bg-white rounded shadow">
+      <h1 className="text-2xl font-bold text-gray-800">💪 筋トレ記録</h1>
+      <p className="text-gray-600">📅 日付: {today}</p>
 
-      <label>種目:</label>
-      <select value={exercise} onChange={e => setExercise(e.target.value)}>
-        <option value="">選択してください</option>
-        {exercises.map(e => (
-          <option key={e.id} value={e.name}>{e.name}</option>
-        ))}
-      </select>
+      <div className="space-y-4">
+        <div>
+          <label className="block font-medium mb-1">種目 <span className="text-red-500">*</span></label>
+          <select value={exercise} onChange={e => setExercise(e.target.value)} className="w-full border p-2 rounded">
+            <option value="">選択してください</option>
+            {exercises.map(e => (
+              <option key={e.id} value={e.name}>{e.name}</option>
+            ))}
+          </select>
+        </div>
 
-      <label>ステータス:</label>
-      <select value={status} onChange={e => setStatus(e.target.value)}>
-        <option value="">選択してください</option>
-        {statuses.map(s => (
-          <option key={s.id} value={s.name}>{s.name}</option>
-        ))}
-      </select>
+        <div>
+          <label className="block font-medium mb-1">ステータス <span className="text-red-500">*</span></label>
+          <select value={status} onChange={e => setStatus(e.target.value)} className="w-full border p-2 rounded">
+            <option value="">選択してください</option>
+            {statuses.map(s => (
+              <option key={s.id} value={s.name}>{s.name}</option>
+            ))}
+          </select>
+        </div>
 
-      {status === 'メイン' && (
-        <>
-          <label>セット番号:</label>
-          <input type="number" value={setNumber} onChange={e => setSetNumber(e.target.value)} />
-        </>
-      )}
+        {status === 'メイン' && (
+          <div>
+            <label className="block font-medium mb-1">セット番号 <span className="text-red-500">*</span></label>
+            <input type="number" value={setNumber} onChange={e => setSetNumber(e.target.value)} className="w-full border p-2 rounded" />
+          </div>
+        )}
 
-      <label>重量 (kg):</label>
-      <input type="number" value={weight} onChange={e => setWeight(e.target.value)} />
+        <div>
+          <label className="block font-medium mb-1">重量 (kg) <span className="text-red-500">*</span></label>
+          <input type="number" value={weight} onChange={e => setWeight(e.target.value)} className="w-full border p-2 rounded" />
+        </div>
 
-      <label>回数 (rep):</label>
-      <input type="number" value={reps} onChange={e => setReps(e.target.value)} />
+        <div>
+          <label className="block font-medium mb-1">回数 (rep) <span className="text-red-500">*</span></label>
+          <input type="number" value={reps} onChange={e => setReps(e.target.value)} className="w-full border p-2 rounded" />
+        </div>
 
-      <label>備考:</label>
-      <textarea value={note} onChange={e => setNote(e.target.value)} />
+        <div>
+          <label className="block font-medium mb-1">備考（任意）</label>
+          <textarea value={note} onChange={e => setNote(e.target.value)} className="w-full border p-2 rounded" />
+        </div>
 
-      <label>種目順序:</label>
-      <input type="number" value={exerciseOrder} onChange={e => setExerciseOrder(e.target.value)} />
+        <div>
+          <label className="block font-medium mb-1">種目順序 <span className="text-red-500">*</span></label>
+          <input type="number" value={exerciseOrder} onChange={e => setExerciseOrder(e.target.value)} className="w-full border p-2 rounded" />
+        </div>
 
-      <button onClick={handleSubmit}>記録する</button>
+        <button onClick={handleSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+          記録する
+        </button>
+
+        <button onClick={() => router.back()} className="text-blue-600 underline hover:text-blue-800 transition text-sm mt-2">
+          ← 戻る
+        </button>
+      </div>
     </main>
   )
 }

@@ -1,57 +1,83 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-type SetRecord = {
-  id: number
+type Set = {
+  id: string
   date: string
   exercise: string
-  status: string
-  set_number?: number
   weight: number
   reps: number
-  note?: string
-  exercise_order?: number
+  set_number: number | null
+  status: string
+  note: string
+  exercise_order: number
 }
 
 export default function HistoryPage() {
-  const [records, setRecords] = useState<SetRecord[]>([])
+  const [sets, setSets] = useState<Set[]>([])
+  const router = useRouter()
 
   useEffect(() => {
-    const fetchRecords = async () => {
+    const fetchSets = async () => {
       const { data, error } = await supabase
         .from('sets')
         .select('*')
         .order('date', { ascending: false })
         .order('exercise_order', { ascending: true })
-      if (!error && data) {
-        setRecords(data)
+
+      if (error) {
+        console.error('取得失敗:', error.message)
+      } else {
+        setSets(data ?? [])
       }
     }
-    fetchRecords()
+
+    fetchSets()
   }, [])
 
   return (
-    <main className="min-h-screen bg-black text-white p-6">
-      <h1 className="text-xl font-bold mb-4">📈 筋トレ履歴</h1>
+    <main className="max-w-5xl mx-auto p-6 space-y-6 bg-white">
+      <h1 className="text-2xl font-bold text-gray-800">📈 筋トレ履歴（表形式）</h1>
 
-      {records.length === 0 ? (
-        <p>記録がまだありません。</p>
-      ) : (
-        <ul className="space-y-4">
-          {records.map((r) => (
-            <li key={r.id} className="border-b border-white/20 pb-2">
-              <div>📅 {r.date}</div>
-              <div>🏋️‍♂️ 種目: {r.exercise}</div>
-              <div>📌 ステータス: {r.status}</div>
-              {r.set_number && <div>🔢 セット: {r.set_number}</div>}
-              <div>⚖️ 重量: {r.weight} kg</div>
-              <div>🔁 回数: {r.reps} 回</div>
-              {r.note && <div>📝 備考: {r.note}</div>}
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="overflow-x-auto">
+        <table className="min-w-full border border-gray-300 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-3 py-2 text-left">日付</th>
+              <th className="border px-3 py-2 text-left">種目</th>
+              <th className="border px-3 py-2 text-center">セット</th>
+              <th className="border px-3 py-2 text-center">重量 (kg)</th>
+              <th className="border px-3 py-2 text-center">回数</th>
+              <th className="border px-3 py-2 text-center">ステータス</th>
+              <th className="border px-3 py-2 text-left">備考</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sets.map(set => (
+              <tr key={set.id} className="hover:bg-gray-50">
+                <td className="border px-3 py-2">{new Date(set.date).toLocaleDateString()}</td>
+                <td className="border px-3 py-2">{set.exercise}</td>
+                <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
+                <td className="border px-3 py-2 text-center">{set.weight}</td>
+                <td className="border px-3 py-2 text-center">{set.reps}</td>
+                <td className={`border px-3 py-2 text-center ${set.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                  {set.status === 'success' ? '✅ 成功' : '❌ 失敗'}
+                </td>
+                <td className="border px-3 py-2">{set.note || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <button
+        onClick={() => router.back()}
+        className="text-blue-600 underline hover:text-blue-800 transition text-sm"
+      >
+        ← 戻る
+      </button>
     </main>
   )
 }
