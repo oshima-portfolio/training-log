@@ -4,6 +4,16 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function WorkoutForm() {
+type Exercise = {
+  id: string
+    name: string
+    category?: string
+  }
+
+  type Status = {
+    id: string
+    name: string
+  }
   const [exercises, setExercises] = useState([])
   const [statuses, setStatuses] = useState([])
 
