@@ -119,14 +119,14 @@ export default function HistoryPage() {
           <thead className="bg-gray-100">
             <tr>
               <th className="border px-3 py-2">日付</th>
+              <th className="border px-3 py-2">順序</th>
               <th className="border px-3 py-2">体重</th>
               <th className="border px-3 py-2">種目</th>
+              <th className="border px-3 py-2">ステータス</th>
               <th className="border px-3 py-2">セット</th>
               <th className="border px-3 py-2">重量</th>
               <th className="border px-3 py-2">回数</th>
-              <th className="border px-3 py-2">ステータス</th>
               <th className="border px-3 py-2">備考</th>
-              <th className="border px-3 py-2">順序</th>
             </tr>
           </thead>
           <tbody>
@@ -136,14 +136,14 @@ export default function HistoryPage() {
               return (
                 <tr key={set.id} className="hover:bg-gray-50">
                   <td className="border px-3 py-2">{date}</td>
+                  <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
                   <td className="border px-3 py-2 text-center">{weight ?? '-'}</td>
                   <td className="border px-3 py-2">{set.exercise}</td>
+                  <td className="border px-3 py-2 text-center">{set.status}</td>
                   <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
                   <td className="border px-3 py-2 text-center">{set.weight}</td>
                   <td className="border px-3 py-2 text-center">{set.reps}</td>
-                  <td className="border px-3 py-2 text-center">{set.status}</td>
                   <td className="border px-3 py-2">{set.note || '-'}</td>
-                  <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
                 </tr>
               )
             })}
