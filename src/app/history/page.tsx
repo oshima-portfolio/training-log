@@ -141,9 +141,7 @@ export default function HistoryPage() {
                   <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
                   <td className="border px-3 py-2 text-center">{set.weight}</td>
                   <td className="border px-3 py-2 text-center">{set.reps}</td>
-                  <td className={`border px-3 py-2 text-center ${set.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                    {set.status === 'success' ? '✅ 成功' : '❌ 失敗'}
-                  </td>
+                  <td className="border px-3 py-2 text-center">{set.status}</td>
                   <td className="border px-3 py-2">{set.note || '-'}</td>
                   <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
                 </tr>
