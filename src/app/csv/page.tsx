@@ -75,38 +75,7 @@ export default function CsvPage() {
       >
         📥 ダウンロード
       </button>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 text-sm mt-4">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-3 py-2">日付</th>
-              <th className="border px-3 py-2">種目</th>
-              <th className="border px-3 py-2">セット</th>
-              <th className="border px-3 py-2">重量</th>
-              <th className="border px-3 py-2">回数</th>
-              <th className="border px-3 py-2">ステータス</th>
-              <th className="border px-3 py-2">備考</th>
-              <th className="border px-3 py-2">順序</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sets.map(set => (
-              <tr key={set.id} className="hover:bg-gray-50">
-                <td className="border px-3 py-2">{new Date(set.date).toLocaleDateString()}</td>
-                <td className="border px-3 py-2">{set.exercise}</td>
-                <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
-                <td className="border px-3 py-2 text-center">{set.weight}</td>
-                <td className="border px-3 py-2 text-center">{set.reps}</td>
-                <td className="border px-3 py-2 text-center">{set.status}</td>
-                <td className="border px-3 py-2">{set.note || '-'}</td>
-                <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
+    
       <button
         onClick={() => router.back()}
         className="text-blue-600 underline hover:text-blue-800 transition text-sm"
