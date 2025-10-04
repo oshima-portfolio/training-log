@@ -69,13 +69,6 @@ type Exercise = {
       alert('登録失敗: ' + error.message)
     } else {
       alert('✅ 記録しました！')
-      setExercise('')
-      setStatus('')
-      setWeight('')
-      setReps('')
-      setNote('')
-      setSetNumber('')
-      setExerciseOrder('')
     }
   }
 
