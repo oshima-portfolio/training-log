@@ -41,6 +41,8 @@ export default function HistoryPage() {
         .select('*')
         .order('date', { ascending: false })
         .order('exercise_order', { ascending: true })
+        .order('weight', { ascending: true })
+        .order('set_number', { ascending: true })
 
       const { data: weightsData } = await supabase.from('weights').select('*')
       const { data: exData } = await supabase.from('exercises').select('name')
