@@ -2,9 +2,71 @@
 'use client'
 /*Next.jsのLinkコンポーネントをインポート、ページ遷移を高速化するらしい*/
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+
+type Set = {
+  id: string
+  date: string
+  exercise: string
+  weight: number
+  reps: number
+  set_number: number | null
+  status: string
+  note: string
+  exercise_order: number
+}
+
+type Weight = {
+  date: string
+  weight: number
+}
+
 
 /*Reactコンポーネント*/
 export default function Home() {
+  const [lastRecords, setLastRecords] = useState<
+    { exercise: string; maxWeight: number; daysAgo: number }[]
+  >([])
+  
+useEffect(() => {
+  const fetchLastRecords = async () => {
+    const { data: setsData } = await supabase
+      .from('sets')
+      .select('*')
+      .order('date', { ascending: false })
+
+    if (!setsData) return
+
+    const today = new Date()
+    const targetExercises = ['ベンチプレス', 'スクワット', 'デッドリフト']
+    const records: { exercise: string; maxWeight: number; daysAgo: number }[] = []
+
+    targetExercises.forEach(exercise => {
+      // メインセットのみ抽出
+      const mainSets = setsData
+        .filter(set => set.exercise === exercise && set.status === 'メイン')
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+      if (mainSets.length > 0) {
+        const latestDate = mainSets[0].date
+        const latestMainSets = mainSets.filter(s => s.date === latestDate)
+        const maxWeight = Math.max(...latestMainSets.map(s => s.weight))
+        const daysAgo = Math.floor(
+          (today.getTime() - new Date(latestDate).getTime()) / (1000 * 60 * 60 * 24)
+        )
+
+        records.push({ exercise, maxWeight, daysAgo })
+      }
+    })
+
+    setLastRecords(records)
+  }
+
+  fetchLastRecords()
+}, [])
+
+
   return (
     /*
     min-h-screen                :画面の高さいっぱいに広げる
@@ -55,6 +117,36 @@ export default function Home() {
         <Link href="/master" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-gray-100 transition">
           🛠️ マスタ管理
         </Link>
+      </div>
+      {/* 🕒 前回の記録 */}
+      <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
+        <h2 className="text-lg font-semibold mb-4">前回メインセット</h2>
+        <table className="min-w-full table-auto border border-gray-300 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-3 py-2 text-left">BIG3</th>
+              <th className="border px-3 py-2 text-right">メイン重量 (kg)</th>
+              <th className="border px-3 py-2 text-right">経過日数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lastRecords.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="text-center py-4 text-gray-500">
+                  記録がまだありません
+                </td>
+              </tr>
+            ) : (
+              lastRecords.map(record => (
+                <tr key={record.exercise} className="hover:bg-gray-50">
+                  <td className="border px-3 py-2">{record.exercise}</td>
+                  <td className="border px-3 py-2 text-right">{record.maxWeight}</td>
+                  <td className="border px-3 py-2 text-right">{record.daysAgo} 日前</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </main>
   )
