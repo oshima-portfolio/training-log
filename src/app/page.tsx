@@ -2,9 +2,12 @@
 'use client'
 /*Next.jsのLinkコンポーネントをインポート、ページ遷移を高速化するらしい*/
 import Link from 'next/link'
+/*reactを使用できるようにする*/
 import { useEffect, useState } from 'react'
+/*supabaseの連携用*/
 import { supabase } from '@/lib/supabase'
 
+/*型定義*/
 type Set = {
   id: string
   date: string
@@ -17,12 +20,6 @@ type Set = {
   exercise_order: number
 }
 
-type Weight = {
-  date: string
-  weight: number
-}
-
-
 /*Reactコンポーネント*/
 export default function Home() {
   const [lastRecords, setLastRecords] = useState<
@@ -30,32 +27,50 @@ export default function Home() {
   >([])
   
 useEffect(() => {
+  /*setsテーブルから全データを取得し、日付の降順で並べ替え。*/
   const fetchLastRecords = async () => {
     const { data: setsData } = await supabase
       .from('sets')
       .select('*')
       .order('date', { ascending: false })
-
     if (!setsData) return
 
+    /*今日の日付を記録*/
     const today = new Date()
+    /*対象種目の抽出※マスタ管理にしたいけど今回は一旦割愛*/
     const targetExercises = ['ベンチプレス', 'スクワット', 'デッドリフト']
+    /*最新記録の抽出*/
     const records: { exercise: string; maxWeight: number; daysAgo: number }[] = []
 
+    /*
+    最新のBIG3の記録を取得
+    メインセットで一番新しい日付グループのデータに対し、一番重い重量をメインセットの重量とする
+    また、一番新しい日付を現在の日付を比較し経過日数を計算する
+
+    exercise :種目
+    maxWeight:最大重量
+    daysAgo  :経過日数
+    */
     targetExercises.forEach(exercise => {
-      // メインセットのみ抽出
       const mainSets = setsData
+        /*メインセットのみ抽出*/
         .filter(set => set.exercise === exercise && set.status === 'メイン')
+        /*日付を新しい順に並べ替え*/
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
       if (mainSets.length > 0) {
+        /*一番新しい日付を取得*/
         const latestDate = mainSets[0].date
+        /*同一日付のセットをまとめる*/
         const latestMainSets = mainSets.filter(s => s.date === latestDate)
+        /*最大重量を抽出*/
         const maxWeight = Math.max(...latestMainSets.map(s => s.weight))
+        /*本日と比べて何日前かを計算*/
         const daysAgo = Math.floor(
           (today.getTime() - new Date(latestDate).getTime()) / (1000 * 60 * 60 * 24)
         )
-
+        
+        /*recordsにデータを追加*/
         records.push({ exercise, maxWeight, daysAgo })
       }
     })
@@ -121,13 +136,13 @@ useEffect(() => {
           🛠️ マスタ管理
         </Link>
       </div>
-      {/* 🕒 前回の記録 */}
+      {/*メインセットの記録 */}
       <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
-        <h2 className="text-lg font-semibold mb-4">前回メインセット</h2>
+        <h2 className="text-lg font-semibold mb-4">BIG3メインセット</h2>
         <table className="min-w-full table-auto border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border px-3 py-2 text-left">BIG3</th>
+              <th className="border px-3 py-2 text-left">種目</th>
               <th className="border px-3 py-2 text-right">メイン重量 (kg)</th>
               <th className="border px-3 py-2 text-right">経過日数</th>
             </tr>
@@ -141,6 +156,7 @@ useEffect(() => {
               </tr>
             ) : (
               lastRecords.map(record => (
+                /*種目を軸に表にデータを挿入*/
                 <tr key={record.exercise} className="hover:bg-gray-50">
                   <td className="border px-3 py-2">{record.exercise}</td>
                   <td className="border px-3 py-2 text-right">{record.maxWeight}</td>
