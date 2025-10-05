@@ -1,10 +1,18 @@
 'use client'
+/*
+useEffect, useState: Reactの状態管理と副作用処理。
+VolumeChart        : グラフ描画用のカスタムコンポーネント。
+supabase           : DBアクセス用のクライアント。
+date-fns           : 日付処理ライブラリ。週番号やフォーマットに使用。
+useRouter          : Next.jsのルーター。戻るボタンに使う。
+*/
 import { useEffect, useState } from 'react'
 import VolumeChart from '@/components/VolumeChart'
 import { supabase } from '@/lib/supabase'
 import { parseISO, getISOWeek, format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 
+/*型定義*/
 type Set = {
   date: string
   exercise: string
@@ -15,10 +23,15 @@ type Set = {
 
 type VolumePoint = { label: string; volume: number }
 
+/*Reactコンポーネント*/
 export default function ChartPage() {
+  /*exercise: 表示対象の種目（初期値はベンチプレス）*/
   const [exercise, setExercise] = useState('ベンチプレス')
+  /*mode: 集計モード（日・週・月）*/
   const [mode, setMode] = useState<'daily' | 'weekly' | 'monthly'>('daily')
+  /*volumeData: グラフ用集計済みデータ*/
   const [volumeData, setVolumeData] = useState<VolumePoint[]>([])
+  /*router: ページ遷移用*/
   const router = useRouter()
 
   useEffect(() => {
