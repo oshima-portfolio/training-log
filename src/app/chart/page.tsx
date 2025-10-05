@@ -27,7 +27,7 @@ export default function ChartPage() {
         .from('sets')
         .select('date, exercise, weight, reps, status')
         .eq('exercise', exercise)
-        .eq('status', 'メイン')
+        .in('status', ['メイン', 'レストポーズ'])
         .order('date', { ascending: true })
 
       if (error || !data) return
@@ -59,9 +59,8 @@ export default function ChartPage() {
       const result: VolumePoint[] = []
 
       grouped.forEach((sets, label) => {
-        const maxWeight = Math.max(...sets.map(s => s.weight))
-        const maxReps = Math.max(...sets.map(s => s.reps))
-        const volume = maxWeight * maxReps * 3
+        // ✅ 全メインセットの合計負荷量
+        const volume = sets.reduce((sum, s) => sum + s.weight * s.reps, 0)
         result.push({ label, volume })
       })
 
@@ -113,7 +112,7 @@ export default function ChartPage() {
       ) : (
         <p className="text-gray-500 mt-4">記録がまだありません</p>
       )}
-      {/* 戻るボタン */}
+
       <button
         onClick={() => router.back()}
         className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
