@@ -47,7 +47,7 @@ export default function Home() {
           ⚖️ 体重記録
         </Link>
         <Link href="/history" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-green-50 transition">
-          📈 履歴表示・分析
+          📝 履歴表示
         </Link>
         <Link href="/csv" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-yellow-50 transition">
           🗂️ CSV出力※未実装

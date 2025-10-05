@@ -76,9 +76,9 @@ export default function MasterPage() {
       {/* 戻るボタン */}
       <button
         onClick={() => router.back()}
-        className="text-blue-600 underline hover:text-blue-800 transition text-sm"
+        className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
       >
-        ← 戻る
+        戻る
       </button>
     </main>
   )

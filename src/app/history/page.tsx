@@ -79,7 +79,7 @@ export default function HistoryPage() {
 
   return (
     <main className="max-w-5xl mx-auto p-6 space-y-6 bg-white">
-      <h1 className="text-2xl font-bold text-gray-800">📈 筋トレ履歴</h1>
+      <h1 className="text-2xl font-bold text-gray-800">📝 履歴表示</h1>
 
       {/* 🔍 検索フォーム */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -111,63 +111,66 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      <button onClick={handleFilter} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-        絞り込む
-      </button>
+{/* 絞り込みと戻るボタンを縦並びに配置 */}
+      <div className="flex flex-col items-start space-y-2 mt-2">
+        <button onClick={handleFilter} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          絞り込む
+        </button>
+
+        {/* 🔙 戻るボタン */}
+        <button
+          onClick={() => router.back()}
+          className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+           戻る
+        </button>
+      </div>
 
       {/* 📋 表表示 */}
-<div className="overflow-x-auto">
-  <table className="min-w-full table-auto border border-gray-300 text-sm mt-4">
-    <thead className="bg-gray-100 sticky top-0 z-10">
-      <tr>
-        <th className="border px-3 py-2 whitespace-nowrap">日付</th>
-        <th className="border px-3 py-2 whitespace-nowrap">順序</th>
-        <th className="border px-3 py-2 whitespace-nowrap">体重</th>
-        <th className="border px-3 py-2 whitespace-nowrap">種目</th>
-        <th className="border px-3 py-2 whitespace-nowrap">ステータス</th>
-        <th className="border px-3 py-2 whitespace-nowrap">セット</th>
-        <th className="border px-3 py-2 whitespace-nowrap">重量</th>
-        <th className="border px-3 py-2 whitespace-nowrap">回数</th>
-        <th className="border px-3 py-2 whitespace-nowrap">備考</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredSets.length === 0 ? (
-        <tr>
-          <td colSpan={9} className="text-center py-4 text-gray-500">
-            条件に一致するデータがありません
-          </td>
-        </tr>
-      ) : (
-        filteredSets.map(set => {
-          const date = new Date(set.date).toISOString().split('T')[0]
-          const weight = weights[date]
-          return (
-            <tr key={set.id} className="hover:bg-gray-50">
-              <td className="border px-3 py-2">{date}</td>
-              <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
-              <td className="border px-3 py-2 text-center">{weight ?? '-'}</td>
-              <td className="border px-3 py-2">{set.exercise}</td>
-              <td className="border px-3 py-2 text-center">{set.status}</td>
-              <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
-              <td className="border px-3 py-2 text-center">{set.weight}</td>
-              <td className="border px-3 py-2 text-center">{set.reps}</td>
-              <td className="border px-3 py-2 max-w-xs break-words">{set.note || '-'}</td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border border-gray-300 text-sm mt-4">
+          <thead className="bg-gray-100 sticky top-0 z-10">
+            <tr>
+              <th className="border px-3 py-2 whitespace-nowrap">日付</th>
+              <th className="border px-3 py-2 whitespace-nowrap">順序</th>
+              <th className="border px-3 py-2 whitespace-nowrap">体重</th>
+              <th className="border px-3 py-2 whitespace-nowrap">種目</th>
+              <th className="border px-3 py-2 whitespace-nowrap">ステータス</th>
+              <th className="border px-3 py-2 whitespace-nowrap">セット</th>
+              <th className="border px-3 py-2 whitespace-nowrap">重量</th>
+              <th className="border px-3 py-2 whitespace-nowrap">回数</th>
+              <th className="border px-3 py-2 whitespace-nowrap">備考</th>
             </tr>
-          )
-        })
-      )}
-    </tbody>
-  </table>
-</div>
-      {/* 🔙 戻るボタン */}
-      <button
-        onClick={() => router.back()}
-        className="text-blue-600 underline hover:text-blue-800 transition text-sm"
-      >
-        ← 戻る
-      </button>
-
+          </thead>
+          <tbody>
+            {filteredSets.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="text-center py-4 text-gray-500">
+                  条件に一致するデータがありません
+                </td>
+              </tr>
+            ) : (
+              filteredSets.map(set => {
+                const date = new Date(set.date).toISOString().split('T')[0]
+                const weight = weights[date]
+                return (
+                  <tr key={set.id} className="hover:bg-gray-50">
+                    <td className="border px-3 py-2">{date}</td>
+                    <td className="border px-3 py-2 text-center">{set.exercise_order}</td>
+                    <td className="border px-3 py-2 text-center">{weight ?? '-'}</td>
+                    <td className="border px-3 py-2">{set.exercise}</td>
+                    <td className="border px-3 py-2 text-center">{set.status}</td>
+                    <td className="border px-3 py-2 text-center">{set.set_number ?? '-'}</td>
+                    <td className="border px-3 py-2 text-center">{set.weight}</td>
+                    <td className="border px-3 py-2 text-center">{set.reps}</td>
+                    <td className="border px-3 py-2 max-w-xs break-words">{set.note || '-'}</td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </main>
   )
 }
