@@ -22,10 +22,11 @@ type Set = {
 
 /*Reactコンポーネント*/
 export default function Home() {
+  /*前回記録*/
   const [lastRecords, setLastRecords] = useState<
     { exercise: string; maxWeight: number; daysAgo: number }[]
   >([])
-  
+
 useEffect(() => {
   /*setsテーブルから全データを取得し、日付の降順で並べ替え。*/
   const fetchLastRecords = async () => {
@@ -80,7 +81,26 @@ useEffect(() => {
 
   fetchLastRecords()
 }, [])
+  /*今回記録*/
+  const [todaySets, setTodaySets] = useState<Set[]>([])
 
+useEffect(() => {
+  const fetchTodaySets = async () => {
+    const today = new Date().toISOString().split('T')[0]
+    const targetExercises = ['ベンチプレス', 'スクワット', 'デッドリフト']
+
+    const { data: setsData } = await supabase
+      .from('sets')
+      .select('*')
+      .eq('date', today)
+      .in('status', ['メイン', 'レストポーズ'])
+      .in('exercise', targetExercises)
+
+    if (setsData) setTodaySets(setsData)
+  }
+
+  fetchTodaySets()
+}, [])
 
   return (
     /*
@@ -130,7 +150,7 @@ useEffect(() => {
           📝 履歴表示
         </Link>
         <Link href="/csv" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
-          🗂️ CSV出力※未実装
+          🗂️ CSV出力
         </Link>
         <Link href="/master" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-100 transition">
           🛠️ マスタ管理
@@ -164,6 +184,46 @@ useEffect(() => {
                 </tr>
               ))
             )}
+          </tbody>
+        </table>
+      </div>
+      {/* 今日の記録テーブル */}
+      <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
+        <h2 className="text-lg font-semibold mb-4">今日の記録</h2>
+        <table className="min-w-full table-auto border border-gray-300 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-3 py-2 text-left">種目</th>
+              <th className="border px-3 py-2 text-right">重量</th>
+              <th className="border px-3 py-2 text-right">1セット</th>
+              <th className="border px-3 py-2 text-right">2セット</th>
+              <th className="border px-3 py-2 text-right">3セット</th>
+              <th className="border px-3 py-2 text-right">RP</th>
+              <th className="border px-3 py-2 text-right">合計挙上回数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {['ベンチプレス', 'スクワット', 'デッドリフト'].map(exercise => {
+              const sets = todaySets.filter(s => s.exercise === exercise)
+              const weight = sets[0]?.weight ?? '-'
+              const repsBySet = [1, 2, 3].map(n => sets.find(s => s.set_number === n)?.reps ?? '-')
+              const rpReps = sets
+                .filter(s => s.status === 'レストポーズ')
+                .reduce((sum, s) => sum + s.reps, 0)
+              const totalReps = sets.reduce((sum, s) => sum + s.reps, 0)
+
+              return (
+                <tr key={exercise} className="hover:bg-gray-50">
+                  <td className="border px-3 py-2">{exercise}</td>
+                  <td className="border px-3 py-2 text-right">{weight}</td>
+                  <td className="border px-3 py-2 text-right">{repsBySet[0]}</td>
+                  <td className="border px-3 py-2 text-right">{repsBySet[1]}</td>
+                  <td className="border px-3 py-2 text-right">{repsBySet[2]}</td>
+                  <td className="border px-3 py-2 text-right">{rpReps}</td>
+                  <td className="border px-3 py-2 text-right">{totalReps}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
