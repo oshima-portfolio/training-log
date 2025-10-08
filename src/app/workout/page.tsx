@@ -28,15 +28,23 @@ type Exercise = {
   const today = new Date().toISOString().split('T')[0]
   const router = useRouter()
 
-  useEffect(() => {
-    const fetchMasters = async () => {
-      const { data: ex } = await supabase.from('exercises').select('*')
-      const { data: st } = await supabase.from('statuses').select('*')
-      setExercises(ex ?? [])
-      setStatuses(st ?? [])
-    }
-    fetchMasters()
-  }, [])
+useEffect(() => {
+  const fetchMasters = async () => {
+    const { data: ex } = await supabase
+      .from('exercises')
+      .select('*')
+      .order('exercises_id', { ascending: true })
+
+    const { data: st } = await supabase
+      .from('statuses')
+      .select('*')
+      .order('statuses_id', { ascending: true })
+
+    setExercises(ex ?? [])
+    setStatuses(st ?? [])
+  }
+  fetchMasters()
+}, [])
 
   const handleSubmit = async () => {
     // 必須項目チェック
