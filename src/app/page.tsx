@@ -168,22 +168,19 @@ useEffect(() => {
             </tr>
           </thead>
           <tbody>
-            {lastRecords.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="text-center py-4 text-gray-500">
-                  記録がまだありません
-                </td>
-              </tr>
-            ) : (
-              lastRecords.map(record => (
-                /*種目を軸に表にデータを挿入*/
-                <tr key={record.exercise} className="hover:bg-gray-50">
-                  <td className="border px-3 py-2">{record.exercise}</td>
-                  <td className="border px-3 py-2 text-right">{record.maxWeight}</td>
-                  <td className="border px-3 py-2 text-right">{record.daysAgo} 日前</td>
+            {['ベンチプレス', 'スクワット', 'デッドリフト'].map(exercise => {
+              const record = lastRecords.find(r => r.exercise === exercise)
+              const weight = record?.maxWeight ?? '0'
+              const daysAgo = record?.daysAgo ?? '0'
+
+              return (
+                <tr key={exercise} className="hover:bg-gray-50">
+                  <td className="border px-3 py-2">{exercise}</td>
+                  <td className="border px-3 py-2 text-right">{weight}</td>
+                  <td className="border px-3 py-2 text-right">{daysAgo} 日前</td>
                 </tr>
-              ))
-            )}
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -206,7 +203,7 @@ useEffect(() => {
             {['ベンチプレス', 'スクワット', 'デッドリフト'].map(exercise => {
               const sets = todaySets.filter(s => s.exercise === exercise)
               const weight = sets[0]?.weight ?? '-'
-              const repsBySet = [1, 2, 3].map(n => sets.find(s => s.set_number === n)?.reps ?? '-')
+              const repsBySet = [1, 2, 3].map(n => sets.find(s => s.set_number === n)?.reps ?? '0')
               const rpReps = sets
                 .filter(s => s.status === 'レストポーズ')
                 .reduce((sum, s) => sum + s.reps, 0)
