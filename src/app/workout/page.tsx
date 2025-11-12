@@ -198,7 +198,7 @@ export default function WorkoutForm() {
           <select value={reps} onChange={e => setReps(e.target.value)} className="w-full border p-2 rounded">
             <option value="">選択してください</option>
             {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
-              <option key={n} value={n}>{n} 回</option>
+              <option key={n} value={n}>{n} </option>
             ))}
           </select>
         </div>
