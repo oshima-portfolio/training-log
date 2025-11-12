@@ -20,11 +20,17 @@ type Weight = {
   weight: number
 }
 
+type Exercise = {
+  exercises_id: number
+  name: string
+  category: string
+}
+
 export default function HistoryPage() {
   const [sets, setSets] = useState<Set[]>([])
   const [filteredSets, setFilteredSets] = useState<Set[]>([])
   const [weights, setWeights] = useState<Record<string, number>>({})
-  const [exercises, setExercises] = useState<string[]>([])
+  const [exercises, setExercises] = useState<Exercise[]>([])
   const [statuses, setStatuses] = useState<string[]>([])
 
   const [filterExercise, setFilterExercise] = useState('')
@@ -41,11 +47,15 @@ export default function HistoryPage() {
         .select('*')
         .order('date', { ascending: false })
         .order('exercise_order', { ascending: true })
-        .order('weight', { ascending: true })
         .order('set_number', { ascending: true })
 
       const { data: weightsData } = await supabase.from('weights').select('*')
-      const { data: exData } = await supabase.from('exercises').select('name')
+
+      const { data: exData } = await supabase
+        .from('exercises')
+        .select('exercises_id, name, category')
+        .order('exercises_id', { ascending: true })
+
       const { data: stData } = await supabase.from('statuses').select('name')
 
       const weightMap: Record<string, number> = {}
@@ -57,7 +67,7 @@ export default function HistoryPage() {
       setSets(setsData ?? [])
       setFilteredSets(setsData ?? [])
       setWeights(weightMap)
-      setExercises(exData?.map(e => e.name) ?? [])
+      setExercises(exData ?? [])
       setStatuses(stData?.map(s => s.name) ?? [])
     }
 
@@ -87,8 +97,10 @@ export default function HistoryPage() {
           <label className="block text-sm font-medium">種目</label>
           <select value={filterExercise} onChange={e => setFilterExercise(e.target.value)} className="w-full border p-2 rounded">
             <option value="">すべて</option>
-            {exercises.map(name => (
-              <option key={name} value={name}>{name}</option>
+            {exercises.map(ex => (
+              <option key={ex.exercises_id} value={ex.name}>
+                【{ex.category}】 {ex.name}
+              </option>
             ))}
           </select>
         </div>
@@ -111,18 +123,16 @@ export default function HistoryPage() {
         </div>
       </div>
 
-{/* 絞り込みと戻るボタンを縦並びに配置 */}
+      {/* 絞り込みと戻るボタン */}
       <div className="flex flex-col items-start space-y-2 mt-2">
         <button onClick={handleFilter} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
           絞り込む
         </button>
-
-        {/* 🔙 戻るボタン */}
         <button
           onClick={() => router.back()}
           className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
-           戻る
+          戻る
         </button>
       </div>
 

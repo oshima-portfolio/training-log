@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function WorkoutForm() {
-type Exercise = {
-  id: string
+  type Exercise = {
+    exercises_id: number
     name: string
     category: string
   }
@@ -14,6 +14,7 @@ type Exercise = {
     id: string
     name: string
   }
+
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [statuses, setStatuses] = useState<Status[]>([])
 
@@ -28,26 +29,50 @@ type Exercise = {
   const today = new Date().toISOString().split('T')[0]
   const router = useRouter()
 
-useEffect(() => {
-  const fetchMasters = async () => {
-    const { data: ex } = await supabase
-      .from('exercises')
-      .select('*')
-      .order('exercises_id', { ascending: true })
+  useEffect(() => {
+    const fetchMasters = async () => {
+      const { data: ex } = await supabase
+        .from('exercises')
+        .select('exercises_id, name, category')
+        .order('exercises_id', { ascending: true })
 
-    const { data: st } = await supabase
-      .from('statuses')
-      .select('*')
-      .order('statuses_id', { ascending: true })
+      const { data: st } = await supabase
+        .from('statuses')
+        .select('*')
+        .order('statuses_id', { ascending: true })
 
-    setExercises(ex ?? [])
-    setStatuses(st ?? [])
-  }
-  fetchMasters()
-}, [])
+      setExercises(ex ?? [])
+      setStatuses(st ?? [])
+    }
+    fetchMasters()
+  }, [])
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!exercise) {
+        setExerciseOrder('')
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('sets')
+        .select('id')
+        .eq('date', today)
+        .eq('exercise', exercise)
+
+      if (error) {
+        console.error('順序取得失敗:', error.message)
+        return
+      }
+
+      const count = data?.length ?? 0
+      setExerciseOrder(String(count + 1))
+    }
+
+    fetchOrder()
+  }, [exercise])
 
   const handleSubmit = async () => {
-    // 必須項目チェック
     if (
       !exercise ||
       !status ||
@@ -92,7 +117,9 @@ useEffect(() => {
           <select value={exercise} onChange={e => setExercise(e.target.value)} className="w-full border p-2 rounded">
             <option value="">選択してください</option>
             {exercises.map(e => (
-              <option key={e.id} value={e.name}>{e.name}</option>
+              <option key={e.exercises_id} value={e.name}>
+                【{e.category}】 {e.name}
+              </option>
             ))}
           </select>
         </div>
@@ -131,7 +158,7 @@ useEffect(() => {
 
         <div>
           <label className="block font-medium mb-1">種目順序 <span className="text-red-500">*</span></label>
-          <input type="number" value={exerciseOrder} onChange={e => setExerciseOrder(e.target.value)} className="w-full border p-2 rounded" />
+          <input type="number" value={exerciseOrder} readOnly className="w-full border p-2 rounded bg-gray-100" />
         </div>
 
         <button onClick={handleSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
