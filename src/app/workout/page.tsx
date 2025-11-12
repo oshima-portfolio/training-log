@@ -50,16 +50,10 @@ export default function WorkoutForm() {
   // 種目が変わったら種目順序を自動設定
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!exercise) {
-        setExerciseOrder('')
-        return
-      }
-
       const { data, error } = await supabase
         .from('sets')
         .select('id')
         .eq('date', today)
-        .eq('exercise', exercise)
 
       if (error) {
         console.error('順序取得失敗:', error.message)
@@ -71,7 +65,7 @@ export default function WorkoutForm() {
     }
 
     fetchOrder()
-  }, [exercise])
+  }, [exercise, status, weight, reps]) // ← 依存関係を広げるとより確実
 
   // ステータスと種目が変わったら前回の重量と今日のセット番号を自動設定（メインのみ）
   useEffect(() => {
@@ -150,8 +144,14 @@ export default function WorkoutForm() {
     } else {
       alert('✅ 記録しました！')
       setReps('')
+
+      // メインの場合は次のセット番号を自動更新
+      if (status === 'メイン') {
+        setSetNumber(prev => String(Number(prev) + 1))
+      }
     }
   }
+
 
   return (
     <main className="max-w-md mx-auto p-6 space-y-6 bg-white rounded shadow">
