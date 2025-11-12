@@ -47,6 +47,7 @@ export default function WorkoutForm() {
     fetchMasters()
   }, [])
 
+  // 種目が変わったら種目順序を自動設定
   useEffect(() => {
     const fetchOrder = async () => {
       if (!exercise) {
@@ -71,6 +72,52 @@ export default function WorkoutForm() {
 
     fetchOrder()
   }, [exercise])
+
+  // ステータスと種目が変わったら前回の重量と今日のセット番号を自動設定（メインのみ）
+  useEffect(() => {
+    const fetchAutoValues = async () => {
+      if (status !== 'メイン' || !exercise) return
+
+      // 前回の重量（今日以外の最新）
+      const { data: previousData, error: previousError } = await supabase
+        .from('sets')
+        .select('date, weight')
+        .eq('exercise', exercise)
+        .eq('status', 'メイン')
+        .order('date', { ascending: false })
+
+      if (previousError) {
+        console.error('前回重量取得失敗:', previousError.message)
+      } else {
+        const previous = previousData?.find(d => {
+          const recordDate = new Date(d.date).toISOString().split('T')[0]
+          return recordDate !== today
+        })
+        if (previous) {
+          setWeight(String(previous.weight))
+        } else {
+          setWeight('')
+        }
+      }
+
+      // 今日のセット番号
+      const { data: todayData, error: todayError } = await supabase
+        .from('sets')
+        .select('set_number')
+        .eq('date', today)
+        .eq('exercise', exercise)
+        .eq('status', 'メイン')
+
+      if (todayError) {
+        console.error('セット番号取得失敗:', todayError.message)
+      } else {
+        const count = todayData?.length ?? 0
+        setSetNumber(String(count + 1))
+      }
+    }
+
+    fetchAutoValues()
+  }, [status, exercise])
 
   const handleSubmit = async () => {
     if (
@@ -148,7 +195,12 @@ export default function WorkoutForm() {
 
         <div>
           <label className="block font-medium mb-1">回数 (rep) <span className="text-red-500">*</span></label>
-          <input type="number" value={reps} onChange={e => setReps(e.target.value)} className="w-full border p-2 rounded" />
+          <select value={reps} onChange={e => setReps(e.target.value)} className="w-full border p-2 rounded">
+            <option value="">選択してください</option>
+            {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
+              <option key={n} value={n}>{n} 回</option>
+            ))}
+          </select>
         </div>
 
         <div>
