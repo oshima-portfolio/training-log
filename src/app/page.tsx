@@ -135,47 +135,19 @@ export default function Home() {
             <tr>
               <th className="border px-3 py-2 text-left">種目</th>
               <th className="border px-3 py-2 text-right">重量 (kg)</th>
-              <th className="border px-3 py-2 text-right">セット数</th>
-              <th className="border px-3 py-2 text-right">合計挙上重量</th>
+              <th className="border px-3 py-2 text-right">セット番号</th>
+              <th className="border px-3 py-2 text-right">レップ数</th>
             </tr>
           </thead>
           <tbody>
-            {Object.values(
-              [...todaySets]
-                .sort((a, b) => a.exercise_order - b.exercise_order)
-                .reduce((acc, set) => {
-                  const key = `${set.exercise}-${set.weight}-${set.exercise_order}`
-                  if (!acc[key]) {
-                    acc[key] = {
-                      exercise: set.exercise,
-                      weight: set.weight,
-                      count: 1,
-                      totalVolume: set.weight * set.reps,
-                      order: set.exercise_order,
-                    }
-                  } else {
-                    acc[key].count += 1
-                    acc[key].totalVolume += set.weight * set.reps
-                  }
-                  return acc
-                }, {} as Record<
-                  string,
-                  {
-                    exercise: string
-                    weight: number
-                    count: number
-                    totalVolume: number
-                    order: number
-                  }
-                >)
-            )
-              .sort((a, b) => a.order - b.order)
-              .map((row, idx) => (
+            {[...todaySets]
+              .sort((a, b) => a.exercise_order - b.exercise_order)
+              .map((set, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
-                  <td className="border px-3 py-2">{row.exercise}</td>
-                  <td className="border px-3 py-2 text-right">{row.weight}</td>
-                  <td className="border px-3 py-2 text-right">{row.count}</td>
-                  <td className="border px-3 py-2 text-right">{row.totalVolume}</td>
+                  <td className="border px-3 py-2">{set.exercise}</td>
+                  <td className="border px-3 py-2 text-right">{set.weight}</td>
+                  <td className="border px-3 py-2 text-right">{set.set_number ?? '—'}</td>
+                  <td className="border px-3 py-2 text-right">{set.reps}</td>
                 </tr>
               ))}
           </tbody>
