@@ -96,6 +96,9 @@ export default function Home() {
         <Link href="/master" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-100 transition">
           🛠️ マスタ管理
         </Link>
+        <Link href="/develop" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-100 transition">
+          🧪 実験用ページ
+        </Link>
       </div>
 
       {/* BIG3メインセット */}
