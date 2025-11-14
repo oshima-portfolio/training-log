@@ -22,7 +22,6 @@ export default function DevelopPage() {
       const { data } = await supabase
         .from('sets')
         .select('id, date, exercise, weight, reps, set_number')
-        //.eq('exercise',"ベンチプレス")
         .in('status', ['メイン'])
         .order('weight', { ascending: false })
 
@@ -36,6 +35,19 @@ export default function DevelopPage() {
     <main className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">🧪 技術実験ページ</h1>
 
+      {/* ✅ バイブテストボタン */}
+      <button
+        onClick={() => {
+          if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200])
+          }
+        }}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+      >
+        バイブテスト
+      </button>
+
+      {/* セット表示テーブル */}
       <table className="min-w-full table-auto border border-gray-300 text-sm">
         <thead className="bg-gray-100">
           <tr>

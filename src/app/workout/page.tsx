@@ -312,20 +312,9 @@ export default function WorkoutForm() {
 
     {/* 📌 選択種目の全記録 */}
     <div className="bg-white border rounded-lg shadow p-4 w-full mt-6">
-      <h2 className="text-lg font-semibold mb-4">📌 選択種目の全記録</h2>
-
-      <select
-        value={selectedExercise}
-        onChange={e => setSelectedExercise(e.target.value)}
-        className="w-full border p-2 rounded mb-4"
-      >
-        <option value="">種目を選択してください</option>
-        {exercises.map(e => (
-          <option key={e.exercises_id} value={e.name}>
-            【{e.category}】 {e.name}
-          </option>
-        ))}
-      </select>
+      <h2 className="text-lg font-semibold mb-4">
+  📌 {selectedExercise ? `${selectedExercise} の全記録` : '選択種目の全記録'}
+      </h2>
 
       {exerciseHistory.length > 0 && (
         <table className="min-w-full table-auto border border-gray-300 text-sm">
