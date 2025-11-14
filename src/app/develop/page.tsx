@@ -36,7 +36,7 @@ export default function DevelopPage() {
         navigator.vibrate([200, 100, 200])
       }
 
-      const audio = new Audio('/sound/Cell_Phone-Vibration03-04.mp3')
+      const audio = new Audio('/sound/Cell_Phone.mp3')
       audio.play().catch(err => {
         console.error('音声再生エラー:', err)
       })
