@@ -15,9 +15,20 @@ export default function WorkoutForm() {
     name: string
   }
 
+  type Set = {
+    id: string
+    date: string
+    exercise: string
+    weight: number
+    reps: number
+    set_number: number | null
+    status: string
+    note: string
+    exercise_order: number
+  }
+
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [statuses, setStatuses] = useState<Status[]>([])
-
   const [exercise, setExercise] = useState('')
   const [status, setStatus] = useState('')
   const [weight, setWeight] = useState('')
@@ -25,9 +36,56 @@ export default function WorkoutForm() {
   const [note, setNote] = useState('')
   const [setNumber, setSetNumber] = useState('')
   const [exerciseOrder, setExerciseOrder] = useState('')
+  const [selectedExercise, setSelectedExercise] = useState('')
+  const [exerciseHistory, setExerciseHistory] = useState<Set[]>([])
 
   const today = new Date().toISOString().split('T')[0]
   const router = useRouter()
+
+  // タイマー関連
+  const [timer, setTimer] = useState(120)
+  const [remaining, setRemaining] = useState(120)
+  const [isRunning, setIsRunning] = useState(false)
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
+
+  const startTimer = () => {
+    if (isRunning) return
+    setIsRunning(true)
+    const id = setInterval(() => {
+      setRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(id)
+          setIsRunning(false)
+          triggerVibration()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    setIntervalId(id)
+  }
+
+  const stopTimer = () => {
+    if (intervalId) clearInterval(intervalId)
+    setIsRunning(false)
+  }
+
+  const resetTimer = () => {
+    stopTimer()
+    setRemaining(timer)
+  }
+
+  const setPreset = (seconds: number) => {
+    stopTimer()
+    setTimer(seconds)
+    setRemaining(seconds)
+  }
+
+  const triggerVibration = () => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([500, 300, 500])
+    }
+  }
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -47,71 +105,74 @@ export default function WorkoutForm() {
     fetchMasters()
   }, [])
 
-  // 種目が変わったら種目順序を自動設定
   useEffect(() => {
     const fetchOrder = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('sets')
         .select('id')
         .eq('date', today)
-
-      if (error) {
-        console.error('順序取得失敗:', error.message)
-        return
-      }
 
       const count = data?.length ?? 0
       setExerciseOrder(String(count + 1))
     }
 
     fetchOrder()
-  }, [exercise, status, weight, reps]) // ← 依存関係を広げるとより確実
+  }, [exercise, status, weight, reps])
 
-  // ステータスと種目が変わったら前回の重量と今日のセット番号を自動設定（メインのみ）
   useEffect(() => {
     const fetchAutoValues = async () => {
       if (status !== 'メイン' || !exercise) return
 
-      // 前回の重量（今日以外の最新）
-      const { data: previousData, error: previousError } = await supabase
+      const { data: previousData } = await supabase
         .from('sets')
         .select('date, weight')
         .eq('exercise', exercise)
         .eq('status', 'メイン')
         .order('date', { ascending: false })
 
-      if (previousError) {
-        console.error('前回重量取得失敗:', previousError.message)
+      const previous = previousData?.find(d => {
+        const recordDate = new Date(d.date).toISOString().split('T')[0]
+        return recordDate !== today
+      })
+      if (previous) {
+        setWeight(String(previous.weight))
       } else {
-        const previous = previousData?.find(d => {
-          const recordDate = new Date(d.date).toISOString().split('T')[0]
-          return recordDate !== today
-        })
-        if (previous) {
-          setWeight(String(previous.weight))
-        } else {
-          setWeight('')
-        }
+        setWeight('')
       }
 
-      // 今日のセット番号
-      const { data: todayData, error: todayError } = await supabase
+      const { data: todayData } = await supabase
         .from('sets')
         .select('set_number')
         .eq('date', today)
         .eq('exercise', exercise)
         .eq('status', 'メイン')
 
-      if (todayError) {
-        console.error('セット番号取得失敗:', todayError.message)
-      } else {
-        const count = todayData?.length ?? 0
-        setSetNumber(String(count + 1))
-      }
+      const count = todayData?.length ?? 0
+      setSetNumber(String(count + 1))
     }
 
     fetchAutoValues()
   }, [status, exercise])
+
+  useEffect(() => {
+    const fetchExerciseHistory = async () => {
+      if (!selectedExercise) {
+        setExerciseHistory([])
+        return
+      }
+
+      const { data } = await supabase
+        .from('sets')
+        .select('*')
+        .eq('exercise', selectedExercise)
+        .order('date', { ascending: false })
+        .order('set_number', { ascending: true })
+
+      setExerciseHistory(data ?? [])
+    }
+
+    fetchExerciseHistory()
+  }, [selectedExercise])
 
   const handleSubmit = async () => {
     if (
@@ -144,24 +205,52 @@ export default function WorkoutForm() {
     } else {
       alert('✅ 記録しました！')
       setReps('')
-
-      // メインの場合は次のセット番号を自動更新
       if (status === 'メイン') {
         setSetNumber(prev => String(Number(prev) + 1))
+        resetTimer()
+        startTimer()
       }
     }
   }
-
 
   return (
     <main className="max-w-md mx-auto p-6 space-y-6 bg-white rounded shadow">
       <h1 className="text-2xl font-bold text-gray-800">💪 筋トレ記録</h1>
       <p className="text-gray-600">📅 日付: {today}</p>
 
+      {/* ⏱️ インターバル */}
+      <div className="bg-gray-100 p-4 rounded shadow space-y-2 mt-6">
+        <h2 className="text-lg font-semibold text-gray-700">⏱️ インターバル</h2>
+        <p className="text-2xl font-mono text-center">
+          {Math.floor(remaining / 60)}:{String(remaining % 60).padStart(2, '0')}
+        </p>
+
+        <div className="flex justify-center gap-2">
+          <button onClick={() => setPreset(120)} className="bg-blue-500 text-white px-3 py-1 rounded">2分</button>
+          <button onClick={() => setPreset(180)} className="bg-blue-500 text-white px-3 py-1 rounded">3分</button>
+          <button onClick={() => setPreset(300)} className="bg-blue-500 text-white px-3 py-1 rounded">5分</button>
+        </div>
+
+        <div className="flex justify-center gap-2 mt-2">
+          <button onClick={startTimer} className="bg-green-500 text-white px-4 py-1 rounded">スタート</button>
+          <button onClick={stopTimer} className="bg-yellow-500 text-white px-4 py-1 rounded">ストップ</button>
+          <button onClick={resetTimer} className="bg-red-500 text-white px-4 py-1 rounded">リセット</button>
+        </div>
+      </div>
+
       <div className="space-y-4">
+        {/* 入力フォーム */}
         <div>
           <label className="block font-medium mb-1">種目 <span className="text-red-500">*</span></label>
-          <select value={exercise} onChange={e => setExercise(e.target.value)} className="w-full border p-2 rounded">
+          <select
+            value={exercise}
+            onChange={e => {
+              const value = e.target.value
+              setExercise(value)
+              setSelectedExercise(value)
+            }}
+            className="w-full border p-2 rounded"
+          >
             <option value="">選択してください</option>
             {exercises.map(e => (
               <option key={e.exercises_id} value={e.name}>
@@ -197,30 +286,73 @@ export default function WorkoutForm() {
           <label className="block font-medium mb-1">回数 (rep) <span className="text-red-500">*</span></label>
           <select value={reps} onChange={e => setReps(e.target.value)} className="w-full border p-2 rounded">
             <option value="">選択してください</option>
-            {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
-              <option key={n} value={n}>{n} </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">備考（任意）</label>
-          <textarea value={note} onChange={e => setNote(e.target.value)} className="w-full border p-2 rounded" />
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">種目順序 <span className="text-red-500">*</span></label>
-          <input type="number" value={exerciseOrder} readOnly className="w-full border p-2 rounded bg-gray-100" />
-        </div>
-
-        <button onClick={handleSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-          記録する
-        </button>
-
-        <button onClick={() => router.back()} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-          戻る
-        </button>
+            {Array.from({ length: 30 }, (_, i) => i + 1).map(n =><option key={n} value={n}>{n}</option>)}
+        </select>
       </div>
-    </main>
-  )
+
+      <div>
+        <label className="block font-medium mb-1">備考（任意）</label>
+        <textarea value={note} onChange={e => setNote(e.target.value)} className="w-full border p-2 rounded" />
+      </div>
+
+      <div>
+        <label className="block font-medium mb-1">種目順序 <span className="text-red-500">*</span></label>
+        <input type="number" value={exerciseOrder} readOnly className="w-full border p-2 rounded bg-gray-100" />
+      </div>
+
+      <button onClick={handleSubmit} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+        記録する
+      </button>
+
+      <button onClick={() => router.back()} className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-gray-600 transition">
+        戻る
+      </button>
+    </div>
+
+
+    {/* 📌 選択種目の全記録 */}
+    <div className="bg-white border rounded-lg shadow p-4 w-full mt-6">
+      <h2 className="text-lg font-semibold mb-4">📌 選択種目の全記録</h2>
+
+      <select
+        value={selectedExercise}
+        onChange={e => setSelectedExercise(e.target.value)}
+        className="w-full border p-2 rounded mb-4"
+      >
+        <option value="">種目を選択してください</option>
+        {exercises.map(e => (
+          <option key={e.exercises_id} value={e.name}>
+            【{e.category}】 {e.name}
+          </option>
+        ))}
+      </select>
+
+      {exerciseHistory.length > 0 && (
+        <table className="min-w-full table-auto border border-gray-300 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-3 py-2 text-left">日付</th>
+              <th className="border px-3 py-2 text-right">ステータス</th>
+              <th className="border px-3 py-2 text-right">セット数</th>
+              <th className="border px-3 py-2 text-right">重量</th>
+              <th className="border px-3 py-2 text-right">レップ数</th>
+              
+            </tr>
+          </thead>
+          <tbody>
+            {exerciseHistory.map((set, idx) => (
+              <tr key={idx} className="hover:bg-gray-50">
+                <td className="border px-3 py-2">{set.date}</td>
+                <td className="border px-3 py-2 text-right">{set.status}</td>
+                <td className="border px-3 py-2 text-right">{set.set_number}</td>
+                <td className="border px-3 py-2 text-right">{set.weight}</td>
+                <td className="border px-3 py-2 text-right">{set.reps}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </main>
+)
 }
