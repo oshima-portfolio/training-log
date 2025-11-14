@@ -13,7 +13,6 @@ type Set = {
 
 export default function DevelopPage() {
   const [sets, setSets] = useState<Set[]>([])
-  const [audio] = useState(() => new Audio('/sound/Cell_Phone-Vibration03-04.mp3')) // ← mp3のパスを指定
 
   useEffect(() => {
     const fetchTodaySets = async () => {
@@ -31,18 +30,26 @@ export default function DevelopPage() {
     fetchTodaySets()
   }, [])
 
+  const handleVibrateAndPlay = () => {
+    if (typeof window !== 'undefined') {
+      if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200])
+      }
+
+      const audio = new Audio('/sound/Cell_Phone-Vibration03-04.mp3')
+      audio.play().catch(err => {
+        console.error('音声再生エラー:', err)
+      })
+    }
+  }
+
   return (
     <main className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">🧪 技術実験ページ</h1>
 
       {/* ✅ バイブ＋音声テストボタン */}
       <button
-        onClick={() => {
-          if ('vibrate' in navigator) {
-            navigator.vibrate([200, 100, 200])
-          }
-          audio.play() // ← 音声再生
-        }}
+        onClick={handleVibrateAndPlay}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
       >
         バイブ＋音声テスト
