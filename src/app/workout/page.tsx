@@ -82,8 +82,15 @@ export default function WorkoutForm() {
   }
 
   const triggerVibration = () => {
-    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate([500, 300, 500])
+    if (typeof window !== 'undefined') {
+      if ('vibrate' in navigator) {
+        navigator.vibrate([500, 300, 500])
+      }
+
+      const audio = new Audio('/sound/Cell_Phone.mp3')
+      audio.play().catch(err => {
+        console.error('音声再生エラー:', err)
+      })
     }
   }
 
@@ -229,6 +236,7 @@ export default function WorkoutForm() {
           <button onClick={() => setPreset(120)} className="bg-blue-500 text-white px-3 py-1 rounded">2分</button>
           <button onClick={() => setPreset(180)} className="bg-blue-500 text-white px-3 py-1 rounded">3分</button>
           <button onClick={() => setPreset(300)} className="bg-blue-500 text-white px-3 py-1 rounded">5分</button>
+          <button onClick={() => setPreset(5)} className="bg-blue-500 text-white px-3 py-1 rounded">テスト用</button>
         </div>
 
         <div className="flex justify-center gap-2 mt-2">

@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-// 既存のsetsテーブルの型（簡略版）
 type Set = {
   id: string
   date: string
@@ -14,6 +13,7 @@ type Set = {
 
 export default function DevelopPage() {
   const [sets, setSets] = useState<Set[]>([])
+  const [audio] = useState(() => new Audio('/sound/Cell_Phone-Vibration03-04.mp3')) // ← mp3のパスを指定
 
   useEffect(() => {
     const fetchTodaySets = async () => {
@@ -35,16 +35,17 @@ export default function DevelopPage() {
     <main className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">🧪 技術実験ページ</h1>
 
-      {/* ✅ バイブテストボタン */}
+      {/* ✅ バイブ＋音声テストボタン */}
       <button
         onClick={() => {
           if ('vibrate' in navigator) {
             navigator.vibrate([200, 100, 200])
           }
+          audio.play() // ← 音声再生
         }}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
       >
-        バイブテスト
+        バイブ＋音声テスト
       </button>
 
       {/* セット表示テーブル */}
