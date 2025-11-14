@@ -83,10 +83,12 @@ export default function WorkoutForm() {
 
   const triggerVibration = () => {
     if (typeof window !== 'undefined') {
+      // バイブレーション
       if ('vibrate' in navigator) {
         navigator.vibrate([500, 300, 500])
       }
 
+      // 音声再生（クライアント側のみ）
       const audio = new Audio('/sound/Cell_Phone.mp3')
       audio.play().catch(err => {
         console.error('音声再生エラー:', err)
