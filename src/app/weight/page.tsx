@@ -8,6 +8,9 @@ export default function WeightForm() {
   const [history, setHistory] = useState<
     { date: string; weight: number; diffFromLastWeek: string | null; diffFromLastMonth: string | null }[]
   >([])
+  const [monthlyAverages, setMonthlyAverages] = useState<
+    { month: string; average: string }[]
+  >([])
   const [lastWeight, setLastWeight] = useState<number | null>(null)
   const today = new Date().toISOString().split('T')[0]
   const router = useRouter()
@@ -81,6 +84,29 @@ export default function WeightForm() {
       // 前回体重をセット（今日以外で最新のもの）
       const previous = (data ?? []).find(e => e.date !== today)
       if (previous) setLastWeight(previous.weight)
+
+      // 📊 月ごとの平均体重を計算
+      const monthMap = new Map<string, { total: number; count: number }>()
+
+        ; (data ?? []).forEach(e => {
+          const d = new Date(e.date)
+          const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` // YYYY-MM
+
+          const current = monthMap.get(yearMonth) || { total: 0, count: 0 }
+          monthMap.set(yearMonth, {
+            total: current.total + e.weight,
+            count: current.count + 1
+          })
+        })
+
+      const averages = Array.from(monthMap.entries())
+        .map(([month, stats]) => ({
+          month,
+          average: (stats.total / stats.count).toFixed(1)
+        }))
+        .sort((a, b) => b.month.localeCompare(a.month)) // 新しい月順
+
+      setMonthlyAverages(averages)
     }
 
     fetchWeights()
@@ -163,6 +189,32 @@ export default function WeightForm() {
       </button>
 
       <section className="space-y-2">
+        <h2 className="text-lg font-semibold">📅 月別平均体重</h2>
+        {monthlyAverages.length === 0 ? (
+          <p className="text-gray-500">データがありません</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300 text-sm text-left">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="border px-4 py-2">年月</th>
+                  <th className="border px-4 py-2">平均体重 (kg)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthlyAverages.map((entry, index) => (
+                  <tr key={index} className="even:bg-gray-50">
+                    <td className="border px-4 py-2">{entry.month}</td>
+                    <td className="border px-4 py-2">{entry.average}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-2">
         <h2 className="text-lg font-semibold">📊 直近1か月の記録</h2>
         {history.length === 0 ? (
           <p className="text-gray-500">まだ記録がありません</p>
@@ -186,8 +238,8 @@ export default function WeightForm() {
                       num > 0
                         ? 'text-red-600'
                         : num < 0
-                        ? 'text-blue-600'
-                        : 'text-gray-600'
+                          ? 'text-blue-600'
+                          : 'text-gray-600'
                     return (
                       <span className={color}>
                         {num > 0 ? '+' : ''}
