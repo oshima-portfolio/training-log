@@ -139,10 +139,8 @@ export default function WorkoutForm() {
         .eq('status', 'メイン')
         .order('date', { ascending: false })
 
-      const previous = previousData?.find(d => {
-        const recordDate = new Date(d.date).toISOString().split('T')[0]
-        return recordDate !== today
-      })
+      const previous = previousData?.[0]
+
       if (previous) {
         setWeight(String(previous.weight))
       } else {
@@ -289,7 +287,42 @@ export default function WorkoutForm() {
 
         <div>
           <label className="block font-medium mb-1">重量 (kg) <span className="text-red-500">*</span></label>
-          <input type="number" value={weight} onChange={e => setWeight(e.target.value)} className="w-full border p-2 rounded" />
+          <div className="flex items-center gap-1">
+            {/* 整数部分のセレクトボックス */}
+            <select
+              value={Math.floor(Number(weight) || 0)}
+              onChange={(e) => {
+                const intVal = e.target.value;
+                const decVal = (Number(weight) % 1).toFixed(1).split('.')[1] || '0';
+                setWeight(`${intVal}.${decVal}`);
+              }}
+              className="flex-1 border p-2 rounded bg-white"
+            >
+              <option value="">（kg）</option>
+              {Array.from({ length: 301 }, (_, i) => i).map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+
+            <span className="text-xl font-bold">.</span>
+
+            {/* 小数部分のセレクトボックス */}
+            <select
+              value={(Number(weight) % 1).toFixed(1).split('.')[1] || '0'}
+              onChange={(e) => {
+                const intVal = Math.floor(Number(weight) || 0);
+                const decVal = e.target.value;
+                setWeight(`${intVal}.${decVal}`);
+              }}
+              className="w-24 border p-2 rounded bg-white"
+            >
+              {Array.from({ length: 10 }, (_, i) => i).map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            
+            <span className="ml-1 text-gray-600">kg</span>
+          </div>
         </div>
 
         <div>
