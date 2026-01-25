@@ -94,8 +94,31 @@ export type MonthlyAverage = {
 export type ChartMode = 'daily' | 'weekly' | 'monthly'
 
 /**
+ * グラフタイプ
+ * 表示するデータの種類を指定
+ */
+export type ChartType = 'volume' | 'maxWeight' | 'estimatedMax' | 'setCount'
+
+/**
+ * 期間フィルター
+ * データの表示期間を指定
+ */
+export type PeriodFilter = 'all' | '3months' | '6months' | '1year'
+
+/**
  * チャートデータポイント
- * グラフ表示用の総負荷量データ
+ * グラフ表示用の汎用データ構造
+ */
+export type ChartDataPoint = {
+  /** ラベル（日付、週、月など） */
+  label: string
+  /** 値（グラフタイプに応じて総負荷量、最大重量、推定1RM、セット数など） */
+  value: number
+}
+
+/**
+ * @deprecated VolumePointの代わりにChartDataPointを使用してください
+ * チャートデータポイント（後方互換性のため残す）
  */
 export type VolumePoint = {
   /** ラベル（日付、週、月など） */
@@ -103,3 +126,4 @@ export type VolumePoint = {
   /** 総負荷量（kg） */
   volume: number
 }
+
