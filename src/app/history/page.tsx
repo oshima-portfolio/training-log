@@ -34,20 +34,22 @@ export default function HistoryPage() {
     <main className="max-w-5xl mx-auto p-6 space-y-6 bg-white">
       <h1 className="text-2xl font-bold text-gray-800">📝 履歴表示</h1>
 
-      {/* フィルター */}
-      <HistoryFilter
-        filterExercise={filterExercise}
-        onExerciseChange={setFilterExercise}
-        filterStatus={filterStatus}
-        onStatusChange={setFilterStatus}
-        filterStartDate={filterStartDate}
-        onStartDateChange={setFilterStartDate}
-        filterEndDate={filterEndDate}
-        onEndDateChange={setFilterEndDate}
-        exercises={exercises}
-        statuses={statuses}
-        onFilter={handleFilter}
-      />
+      <div>
+        {/* フィルター */}
+        <HistoryFilter
+          filterExercise={filterExercise}
+          onExerciseChange={setFilterExercise}
+          filterStatus={filterStatus}
+          onStatusChange={setFilterStatus}
+          filterStartDate={filterStartDate}
+          onStartDateChange={setFilterStartDate}
+          filterEndDate={filterEndDate}
+          onEndDateChange={setFilterEndDate}
+          exercises={exercises}
+          statuses={statuses}
+          onFilter={handleFilter}
+        />
+      </div>
 
       {/* 戻るボタン */}
       <button
