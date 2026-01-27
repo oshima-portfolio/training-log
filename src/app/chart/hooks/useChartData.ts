@@ -6,20 +6,26 @@ import type { ChartDataPoint, ChartMode, ChartType, PeriodFilter, Exercise } fro
 // 型を再エクスポート
 export type { ChartDataPoint, ChartMode, ChartType, PeriodFilter }
 
+export type TargetType = 'exercise' | 'bodyPart'
+
 /**
  * チャートデータ取得・管理フック
  * 
  * 全種目に対応し、複数のグラフタイプ（総負荷量/最大重量/推定1RM/セット数）と
  * 期間フィルターをサポートするカスタムフック。
+ * 種目別・部位別の集計に対応。
  * 
  * @returns {Object} チャート関連の状態とデータ
  */
 export const useChartData = () => {
     // === マスタデータ ===
     const [exercises, setExercises] = useState<Exercise[]>([])
+    const [categories, setCategories] = useState<string[]>([])
 
     // === フィルター状態 ===
+    const [targetType, setTargetType] = useState<TargetType>('exercise')
     const [exercise, setExercise] = useState('')
+    const [bodyPart, setBodyPart] = useState('')
     const [mode, setMode] = useState<ChartMode>('daily')
     const [chartType, setChartType] = useState<ChartType>('volume')
     const [period, setPeriod] = useState<PeriodFilter>('all')
@@ -44,10 +50,17 @@ export const useChartData = () => {
 
                 setExercises(data ?? [])
 
-                // 初期値として最初の種目を設定（BIG3の「ベンチプレス」があれば優先）
-                if (data && data.length > 0) {
-                    const benchPress = data.find(ex => ex.name === 'ベンチプレス')
-                    setExercise(benchPress?.name ?? data[0].name)
+                // 部位リストを作成（重複排除）
+                if (data) {
+                    const uniqueCategories = Array.from(new Set(data.map(ex => ex.category))).sort()
+                    setCategories(uniqueCategories)
+
+                    // 初期値設定
+                    if (data.length > 0) {
+                        const benchPress = data.find(ex => ex.name === 'ベンチプレス')
+                        setExercise(benchPress?.name ?? data[0].name)
+                        setBodyPart(benchPress?.category ?? uniqueCategories[0] ?? '')
+                    }
                 }
             } catch (err: unknown) {
                 console.error('種目マスタの取得に失敗:', err)
@@ -71,7 +84,8 @@ export const useChartData = () => {
      */
     useEffect(() => {
         const fetchData = async () => {
-            if (!exercise) return
+            if (targetType === 'exercise' && !exercise) return
+            if (targetType === 'bodyPart' && !bodyPart) return
 
             setLoading(true)
             setError(null)
@@ -96,13 +110,29 @@ export const useChartData = () => {
                         break
                 }
 
-                // 指定種目のメインセットとレストポーズセットを取得
+                // クエリ構築
                 let query = supabase
                     .from('sets')
                     .select('date, exercise, weight, reps, status')
-                    .eq('exercise', exercise)
-                    .in('status', ['メイン', 'レストポーズ'])
                     .order('date', { ascending: true })
+
+                // 対象種目の絞り込み
+                if (targetType === 'exercise') {
+                    query = query.eq('exercise', exercise)
+                } else {
+                    // 部位別の場合、その部位に属する全種目を対象にする
+                    const targetExercises = exercises
+                        .filter(ex => ex.category === bodyPart)
+                        .map(ex => ex.name)
+
+                    if (targetExercises.length === 0) {
+                        setChartData([])
+                        setLoading(false)
+                        return
+                    }
+
+                    query = query.in('exercise', targetExercises)
+                }
 
                 // 期間フィルターを適用
                 if (startDate) {
@@ -190,14 +220,19 @@ export const useChartData = () => {
         }
 
         fetchData()
-    }, [exercise, mode, chartType, period])
+    }, [exercise, bodyPart, targetType, mode, chartType, period, exercises])
 
     return {
         // マスタデータ
         exercises,
+        categories,
         // フィルター状態
+        targetType,
+        setTargetType,
         exercise,
         setExercise,
+        bodyPart,
+        setBodyPart,
         mode,
         setMode,
         chartType,

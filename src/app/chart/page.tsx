@@ -42,8 +42,13 @@ export default function ChartPage() {
   const router = useRouter()
   const {
     exercises,
+    categories,
+    targetType,
+    setTargetType,
     exercise,
     setExercise,
+    bodyPart,
+    setBodyPart,
     mode,
     setMode,
     chartType,
@@ -64,7 +69,8 @@ export default function ChartPage() {
   }
 
   // グラフタイトルを動的に生成
-  const chartTitle = `${exercise}の${getModeName(mode)}${getChartTypeName(chartType)}`
+  const displayTarget = targetType === 'exercise' ? exercise : bodyPart
+  const chartTitle = `${displayTarget}の${getModeName(mode)}${getChartTypeName(chartType)}`
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 md:p-6 space-y-4 md:space-y-6">
@@ -72,8 +78,13 @@ export default function ChartPage() {
 
       <ChartFilter
         exercises={exercises}
+        categories={categories}
+        targetType={targetType}
+        setTargetType={setTargetType}
         exercise={exercise}
         setExercise={setExercise}
+        bodyPart={bodyPart}
+        setBodyPart={setBodyPart}
         chartType={chartType}
         setChartType={setChartType}
         period={period}

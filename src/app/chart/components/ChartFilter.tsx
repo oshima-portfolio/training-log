@@ -1,9 +1,15 @@
 import type { ChartMode, ChartType, PeriodFilter, Exercise } from '@/types/types'
+import { TargetType } from '../hooks/useChartData'
 
 type Props = {
     exercises: Exercise[]
+    categories: string[]
+    targetType: TargetType
+    setTargetType: (value: TargetType) => void
     exercise: string
     setExercise: (value: string) => void
+    bodyPart: string
+    setBodyPart: (value: string) => void
     chartType: ChartType
     setChartType: (value: ChartType) => void
     period: PeriodFilter
@@ -14,8 +20,13 @@ type Props = {
 
 export default function ChartFilter({
     exercises,
+    categories,
+    targetType,
+    setTargetType,
     exercise,
     setExercise,
+    bodyPart,
+    setBodyPart,
     chartType,
     setChartType,
     period,
@@ -25,22 +36,57 @@ export default function ChartFilter({
 }: Props) {
     return (
         <div className="bg-white border rounded-lg shadow p-4 space-y-4">
-            {/* 種目選択 */}
+            {/* 分析対象選択 */}
             <div>
                 <label className="block text-base font-semibold mb-2 text-gray-700">
-                    📋 種目を選択
+                    🎯 分析対象
                 </label>
-                <select
-                    value={exercise}
-                    onChange={e => setExercise(e.target.value)}
-                    className="border border-gray-300 p-3 rounded-lg w-full text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                    {exercises.map(ex => (
-                        <option key={ex.exercises_id} value={ex.name}>
-                            {ex.name} ({ex.category})
-                        </option>
-                    ))}
-                </select>
+                <div className="flex rounded-lg overflow-hidden border border-blue-600 mb-3">
+                    <button
+                        onClick={() => setTargetType('exercise')}
+                        className={`flex-1 py-2 font-medium transition ${targetType === 'exercise'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-blue-600 hover:bg-blue-50'
+                            }`}
+                    >
+                        種目別
+                    </button>
+                    <button
+                        onClick={() => setTargetType('bodyPart')}
+                        className={`flex-1 py-2 font-medium transition ${targetType === 'bodyPart'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-blue-600 hover:bg-blue-50'
+                            }`}
+                    >
+                        部位別
+                    </button>
+                </div>
+
+                {targetType === 'exercise' ? (
+                    <select
+                        value={exercise}
+                        onChange={e => setExercise(e.target.value)}
+                        className="border border-gray-300 p-3 rounded-lg w-full text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        {exercises.map(ex => (
+                            <option key={ex.exercises_id} value={ex.name}>
+                                {ex.name} ({ex.category})
+                            </option>
+                        ))}
+                    </select>
+                ) : (
+                    <select
+                        value={bodyPart}
+                        onChange={e => setBodyPart(e.target.value)}
+                        className="border border-gray-300 p-3 rounded-lg w-full text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                        {categories.map(cat => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
 
             {/* グラフタイプ選択 */}
@@ -52,8 +98,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setChartType('volume')}
                         className={`p-3 rounded-lg font-medium transition ${chartType === 'volume'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         総負荷量
@@ -61,8 +107,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setChartType('maxWeight')}
                         className={`p-3 rounded-lg font-medium transition ${chartType === 'maxWeight'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         最大重量
@@ -70,8 +116,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setChartType('estimatedMax')}
                         className={`p-3 rounded-lg font-medium transition ${chartType === 'estimatedMax'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         推定1RM
@@ -79,8 +125,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setChartType('setCount')}
                         className={`p-3 rounded-lg font-medium transition ${chartType === 'setCount'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         セット数
@@ -97,8 +143,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setPeriod('all')}
                         className={`p-3 rounded-lg font-medium transition ${period === 'all'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         全期間
@@ -106,8 +152,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setPeriod('3months')}
                         className={`p-3 rounded-lg font-medium transition ${period === '3months'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         直近3ヶ月
@@ -115,8 +161,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setPeriod('6months')}
                         className={`p-3 rounded-lg font-medium transition ${period === '6months'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         直近6ヶ月
@@ -124,8 +170,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setPeriod('1year')}
                         className={`p-3 rounded-lg font-medium transition ${period === '1year'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         直近1年
@@ -142,8 +188,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setMode('daily')}
                         className={`p-3 rounded-lg font-medium transition ${mode === 'daily'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         日別
@@ -151,8 +197,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setMode('weekly')}
                         className={`p-3 rounded-lg font-medium transition ${mode === 'weekly'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         週別
@@ -160,8 +206,8 @@ export default function ChartFilter({
                     <button
                         onClick={() => setMode('monthly')}
                         className={`p-3 rounded-lg font-medium transition ${mode === 'monthly'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         月別
