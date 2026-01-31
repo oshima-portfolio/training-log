@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   fix:
-    # タイトルに /fix が含まれる時だけ実行
     if: contains(github.event.issue.title, '/fix')
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +20,8 @@ jobs:
         uses: google-github-actions/run-gemini-cli@main
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          # 引用符で囲み、改行エラーを防ぐ記述に変更
+          # 安定して動くモデルを指定します
+          model: "gemini-1.5-flash"
           prompt: >
             You are a professional TypeScript and Next.js developer.
             Please fix the source code based on the following Issue.
