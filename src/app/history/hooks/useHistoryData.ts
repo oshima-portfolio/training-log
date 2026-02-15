@@ -82,6 +82,55 @@ export const useHistoryData = () => {
         setFilteredSets(filtered)
     }
 
+    /**
+     * 指定されたIDのトレーニングセットを更新する
+     * @param id 更新するセットのID
+     * @param updates 更新するデータ
+     */
+    const updateSet = async (id: string, updates: Partial<WorkoutSet>) => {
+        const { error } = await supabase
+            .from('sets')
+            .update(updates)
+            .eq('id', id)
+
+        if (error) {
+            console.error('Error updating set:', error)
+            throw error
+        }
+
+        // 状態を更新
+        const newSets = sets.map(s => s.id === id ? { ...s, ...updates } : s)
+        setSets(newSets)
+
+        // フィルター適用後の状態も更新
+        setFilteredSets(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+    }
+
+    /**
+     * 指定されたIDのトレーニングセットを削除する
+     * @param id 削除するセットのID
+     */
+    const deleteSet = async (id: string) => {
+        const { error } = await supabase
+            .from('sets')
+            .delete()
+            .eq('id', id)
+
+        if (error) {
+            console.error('Error deleting set:', error)
+            throw error
+        }
+
+        // 状態を更新
+        const newSets = sets.filter(s => s.id !== id)
+        setSets(newSets)
+
+        // フィルター適用後の状態も更新
+        // 現在のフィルター条件で再フィルタリングするか、単純に削除するか
+        // ここでは単純に削除（フィルター条件が変わらないため）
+        setFilteredSets(prev => prev.filter(s => s.id !== id))
+    }
+
     return {
         // データ
         filteredSets,
@@ -97,7 +146,9 @@ export const useHistoryData = () => {
         setFilterStartDate,
         filterEndDate,
         setFilterEndDate,
-        // フィルター実行
-        handleFilter
+        // 操作
+        handleFilter,
+        updateSet,
+        deleteSet
     }
 }
