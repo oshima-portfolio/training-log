@@ -17,44 +17,67 @@ type Set = {
 }
 
 export default function Home() {
-  const [lastRecords, setLastRecords] = useState<
-    { exercise: string; maxWeight: number; daysAgo: number }[]
+  const [partDaysAgo, setPartDaysAgo] = useState<
+    { part: string; daysAgo: number }[]
   >([])
   const [todaySets, setTodaySets] = useState<Set[]>([])
 
-  // BIG3の最新記録を取得
+  // 部位ごとの最終トレーニング日からの経過日数を取得
   useEffect(() => {
-    const fetchLastRecords = async () => {
+    const fetchPartDaysAgo = async () => {
+      const { data: exercisesData } = await supabase.from('exercises').select('*')
       const { data: setsData } = await supabase
         .from('sets')
         .select('*')
         .order('date', { ascending: false })
-      if (!setsData) return
 
-      const today = new Date(getTodayJST())
-      const targetExercises = ['ベンチプレス', 'スクワット', 'デッドリフト']
-      const records: { exercise: string; maxWeight: number; daysAgo: number }[] = []
+      if (!exercisesData || !setsData) return
 
-      targetExercises.forEach(exercise => {
-        const mainSets = setsData
-          .filter(set => set.exercise === exercise && set.status === 'メイン')
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      const exerciseToCategory: Record<string, string> = {}
+      exercisesData.forEach(ex => {
+        exerciseToCategory[ex.name] = ex.category
+      })
 
-        if (mainSets.length > 0) {
-          const latestDate = mainSets[0].date
-          const latestMainSets = mainSets.filter(s => s.date === latestDate)
-          const maxWeight = Math.max(...latestMainSets.map(s => s.weight))
-          const daysAgo = Math.floor(
-            (today.getTime() - new Date(latestDate).getTime()) / (1000 * 60 * 60 * 24)
-          )
-          records.push({ exercise, maxWeight, daysAgo })
+      // BIG3は特定の部位としてカウント
+      const overrides: Record<string, string> = {
+        'ベンチプレス': '胸',
+        'デッドリフト': '背中',
+        'スクワット': '足',
+      }
+
+      const latestDatesByPart: Record<string, string> = {}
+      
+      setsData.forEach(set => {
+        const exercise = set.exercise
+        const category = overrides[exercise] || exerciseToCategory[exercise]
+        
+        if (!category) return
+
+        if (!latestDatesByPart[category]) {
+          latestDatesByPart[category] = set.date
+        } else {
+          if (new Date(set.date) > new Date(latestDatesByPart[category])) {
+            latestDatesByPart[category] = set.date
+          }
         }
       })
 
-      setLastRecords(records)
+      const today = new Date(getTodayJST())
+
+      const records: { part: string; daysAgo: number }[] = Object.entries(latestDatesByPart).map(([part, date]) => {
+        const daysAgo = Math.floor(
+          (today.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
+        )
+        return { part, daysAgo }
+      })
+
+      // 経過日数が長い順にソート（放置している部位を上に）
+      records.sort((a, b) => b.daysAgo - a.daysAgo)
+
+      setPartDaysAgo(records)
     }
 
-    fetchLastRecords()
+    fetchPartDaysAgo()
   }, [])
 
   // 今日の全種目の記録を取得
@@ -102,31 +125,31 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* BIG3メインセット */}
+      {/* 部位ごとの経過日数 */}
       <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
-        <h2 className="text-lg font-semibold mb-4">BIG3メインセット</h2>
+        <h2 className="text-lg font-semibold mb-4">部位別 最終トレーニングからの経過日数</h2>
         <table className="min-w-full table-auto border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border px-3 py-2 text-left">種目</th>
-              <th className="border px-3 py-2 text-right">メイン重量 (kg)</th>
+              <th className="border px-3 py-2 text-left">部位</th>
               <th className="border px-3 py-2 text-right">経過日数</th>
             </tr>
           </thead>
           <tbody>
-            {['ベンチプレス', 'スクワット', 'デッドリフト'].map(exercise => {
-              const record = lastRecords.find(r => r.exercise === exercise)
-              const weight = record?.maxWeight ?? '0'
-              const daysAgo = record?.daysAgo ?? '0'
-
-              return (
-                <tr key={exercise} className="hover:bg-gray-50">
-                  <td className="border px-3 py-2">{exercise}</td>
-                  <td className="border px-3 py-2 text-right">{weight}</td>
-                  <td className="border px-3 py-2 text-right">{daysAgo} 日前</td>
+            {partDaysAgo.length > 0 ? (
+              partDaysAgo.map(record => (
+                <tr key={record.part} className="hover:bg-gray-50">
+                  <td className="border px-3 py-2">{record.part}</td>
+                  <td className="border px-3 py-2 text-right">{record.daysAgo} 日前</td>
                 </tr>
-              )
-            })}
+              ))
+            ) : (
+              <tr>
+                <td colSpan={2} className="border px-3 py-2 text-center text-gray-500">
+                  データがありません
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
