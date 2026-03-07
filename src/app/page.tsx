@@ -156,7 +156,7 @@ export default function Home() {
 
       {/* 今日の記録（全種目） */}
       <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
-        <h2 className="text-lg font-semibold mb-4">今日の記録（全種目）</h2>
+        <h2 className="text-lg font-semibold mb-4">今日の記録</h2>
         <table className="min-w-full table-auto border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
