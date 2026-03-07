@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useWeightData } from './hooks/useWeightData'
 import MonthlyAverageTable from './components/MonthlyAverageTable'
 import WeightHistoryTable from './components/WeightHistoryTable'
+import { getTodayJST } from '@/utils/date'
 
 /**
  * 体重記録ページ
@@ -18,7 +19,7 @@ import WeightHistoryTable from './components/WeightHistoryTable'
  */
 export default function WeightForm() {
   const router = useRouter()
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayJST()
 
   // フォーム入力値
   const [weight, setWeight] = useState('')

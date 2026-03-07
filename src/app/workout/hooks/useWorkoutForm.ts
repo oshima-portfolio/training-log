@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Exercise, Status, WorkoutSet } from '@/types/types'
+import { getTodayJST } from '@/utils/date'
 
 /**
  * ワークアウトフォームの状態管理フック
@@ -13,7 +14,7 @@ import type { Exercise, Status, WorkoutSet } from '@/types/types'
  */
 export const useWorkoutForm = () => {
     // 今日の日付（YYYY-MM-DD形式）
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayJST()
 
     // === マスタデータ ===
     const [exercises, setExercises] = useState<Exercise[]>([])

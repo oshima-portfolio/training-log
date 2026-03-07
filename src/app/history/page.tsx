@@ -5,6 +5,7 @@ import { useHistoryData } from './hooks/useHistoryData'
 import HistoryFilter from './components/HistoryFilter'
 import HistoryTable from './components/HistoryTable'
 import type { WorkoutSet } from '@/types/types'
+import { toJSTString } from '@/utils/date'
 
 /**
  * トレーニング履歴表示ページ
@@ -133,7 +134,7 @@ export default function HistoryPage() {
                     type="date"
                     required
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2"
-                    value={editForm.date ? new Date(editForm.date).toISOString().split('T')[0] : ''}
+                    value={editForm.date ? toJSTString(editForm.date) : ''}
                     onChange={e => setEditForm({ ...editForm, date: e.target.value })}
                   />
                 </div>

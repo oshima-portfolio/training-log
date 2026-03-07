@@ -1,4 +1,5 @@
 import type { WorkoutSet } from '@/types/types'
+import { toJSTString, getTodayJST } from '@/utils/date'
 
 /**
  * CSV生成ユーティリティ
@@ -72,8 +73,7 @@ export const generateTrainingCSV = (
  * @returns YYYY-MM-DD形式の日付文字列
  */
 export const formatDate = (dateStr: string): string => {
-    const d = new Date(dateStr)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return toJSTString(dateStr)
 }
 
 /**
@@ -89,7 +89,7 @@ export const downloadCSV = (csvContent: string, filename: string): void => {
 
     // ダウンロード用のリンクを作成して自動クリック
     const link = document.createElement('a')
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayJST()
     link.href = url
     link.setAttribute('download', `${filename}_${today}.csv`)
     document.body.appendChild(link)

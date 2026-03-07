@@ -1,4 +1,5 @@
 import type { WorkoutSet } from '@/types/types'
+import { toJSTString } from '@/utils/date'
 
 /**
  * 履歴テーブルコンポーネント
@@ -51,7 +52,7 @@ export default function HistoryTable({ sets, weights, onDelete, onEdit }: Histor
                         </tr>
                     ) : (
                         sets.map(set => {
-                            const date = new Date(set.date).toISOString().split('T')[0]
+                            const date = toJSTString(set.date)
                             const weight = weights[date]
                             return (
                                 <tr key={set.id} className="hover:bg-gray-50">

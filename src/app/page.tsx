@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getTodayJST } from '@/utils/date'
 
 type Set = {
   id: string
@@ -30,7 +31,7 @@ export default function Home() {
         .order('date', { ascending: false })
       if (!setsData) return
 
-      const today = new Date()
+      const today = new Date(getTodayJST())
       const targetExercises = ['ベンチプレス', 'スクワット', 'デッドリフト']
       const records: { exercise: string; maxWeight: number; daysAgo: number }[] = []
 
@@ -59,7 +60,7 @@ export default function Home() {
   // 今日の全種目の記録を取得
   useEffect(() => {
     const fetchTodaySets = async () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayJST()
 
       const { data: setsData } = await supabase
         .from('sets')

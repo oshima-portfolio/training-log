@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { WorkoutSet, Exercise } from '@/types/types'
+import { toJSTString } from '@/utils/date'
 
 /**
  * 履歴データとフィルタリング状態を管理するフック
@@ -52,7 +53,7 @@ export const useHistoryData = () => {
             // 体重データを日付キーのマップに変換
             const weightMap: Record<string, number> = {}
             weightsData?.forEach(w => {
-                const date = new Date(w.date).toISOString().split('T')[0]
+                const date = toJSTString(w.date)
                 weightMap[date] = w.weight
             })
 
@@ -71,7 +72,7 @@ export const useHistoryData = () => {
      */
     const handleFilter = () => {
         const filtered = sets.filter(set => {
-            const date = new Date(set.date).toISOString().split('T')[0]
+            const date = toJSTString(set.date)
             return (
                 (!filterExercise || set.exercise === filterExercise) &&
                 (!filterStatus || set.status === filterStatus) &&

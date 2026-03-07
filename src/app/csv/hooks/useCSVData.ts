@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { WorkoutSet } from '@/types/types'
+import { toJSTString } from '@/utils/date'
 
 /**
  * CSV出力用データ取得フック
@@ -42,7 +43,7 @@ export const useCSVData = () => {
                 // 体重データを日付キーのマップに変換
                 const map: Record<string, number> = {}
                 weightsData?.forEach(entry => {
-                    const dateKey = new Date(entry.date).toISOString().split('T')[0]
+                    const dateKey = toJSTString(entry.date)
                     map[dateKey] = entry.weight
                 })
                 setWeightsMap(map)

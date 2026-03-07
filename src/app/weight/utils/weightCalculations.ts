@@ -1,4 +1,5 @@
 import type { WeightRecord, WeightHistoryEntry, MonthlyAverage } from '@/types/types'
+import { getTodayJST } from '@/utils/date'
 
 /**
  * 体重データの前週比を計算
@@ -108,7 +109,7 @@ export const enrichWeightData = (data: WeightRecord[]): WeightHistoryEntry[] => 
  * @returns {WeightHistoryEntry[]} 直近1ヶ月分のデータ
  */
 export const filterRecentMonth = (data: WeightHistoryEntry[]): WeightHistoryEntry[] => {
-    const oneMonthAgo = new Date()
+    const oneMonthAgo = new Date(getTodayJST())
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
 
     return data.filter(e => new Date(e.date) >= oneMonthAgo)

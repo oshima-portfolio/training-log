@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getTodayJST } from '@/utils/date'
 
 type Set = {
   id: string
@@ -16,7 +17,7 @@ export default function DevelopPage() {
 
   useEffect(() => {
     const fetchTodaySets = async () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayJST()
 
       const { data } = await supabase
         .from('sets')
