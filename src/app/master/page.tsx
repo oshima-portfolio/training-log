@@ -13,12 +13,12 @@ export default function MasterPage() {
   // Exercise Modal State
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false)
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
-  const [exerciseForm, setExerciseForm] = useState({ name: '', category: '' })
+  const [exerciseForm, setExerciseForm] = useState<{ exercises_id: string | number; name: string; category: string }>({ exercises_id: '', name: '', category: '' })
 
   // Status Modal State
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   const [editingStatus, setEditingStatus] = useState<Status | null>(null)
-  const [statusForm, setStatusForm] = useState({ name: '' })
+  const [statusForm, setStatusForm] = useState({ id: '', name: '' })
 
   const fetchMasters = async () => {
     const { data: ex } = await supabase.from('exercises').select('*').order('exercises_id', { ascending: true })
@@ -34,23 +34,24 @@ export default function MasterPage() {
   // Exercise Handlers
   const openAddExerciseModal = () => {
     setEditingExercise(null)
-    setExerciseForm({ name: '', category: '' })
+    setExerciseForm({ exercises_id: '', name: '', category: '' })
     setIsExerciseModalOpen(true)
   }
 
   const openEditExerciseModal = (ex: Exercise) => {
     setEditingExercise(ex)
-    setExerciseForm({ name: ex.name, category: ex.category })
+    setExerciseForm({ exercises_id: ex.exercises_id, name: ex.name, category: ex.category })
     setIsExerciseModalOpen(true)
   }
 
   const handleExerciseSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const currentExercisesId = Number(exerciseForm.exercises_id);
     if (editingExercise) {
       // Update
       const { error } = await supabase
         .from('exercises')
-        .update({ name: exerciseForm.name, category: exerciseForm.category })
+        .update({ exercises_id: currentExercisesId, name: exerciseForm.name, category: exerciseForm.category })
         .eq('exercises_id', editingExercise.exercises_id)
 
       if (!error) {
@@ -63,7 +64,7 @@ export default function MasterPage() {
       // Add
       const { error } = await supabase
         .from('exercises')
-        .insert([{ name: exerciseForm.name, category: exerciseForm.category }])
+        .insert([{ exercises_id: currentExercisesId, name: exerciseForm.name, category: exerciseForm.category }])
 
       if (!error) {
         setIsExerciseModalOpen(false)
@@ -92,13 +93,13 @@ export default function MasterPage() {
   // Status Handlers
   const openAddStatusModal = () => {
     setEditingStatus(null)
-    setStatusForm({ name: '' })
+    setStatusForm({ id: '', name: '' })
     setIsStatusModalOpen(true)
   }
 
   const openEditStatusModal = (st: Status) => {
     setEditingStatus(st)
-    setStatusForm({ name: st.name })
+    setStatusForm({ id: st.id, name: st.name })
     setIsStatusModalOpen(true)
   }
 
@@ -108,7 +109,7 @@ export default function MasterPage() {
       // Update
       const { error } = await supabase
         .from('statuses')
-        .update({ name: statusForm.name })
+        .update({ id: statusForm.id, name: statusForm.name })
         .eq('id', editingStatus.id) // Assuming 'id' is correct for statuses
 
       if (!error) {
@@ -121,7 +122,7 @@ export default function MasterPage() {
       // Add
       const { error } = await supabase
         .from('statuses')
-        .insert([{ name: statusForm.name }])
+        .insert([{ id: statusForm.id, name: statusForm.name }])
 
       if (!error) {
         setIsStatusModalOpen(false)
@@ -174,6 +175,7 @@ export default function MasterPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">種目名</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">カテゴリ</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
@@ -182,6 +184,7 @@ export default function MasterPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {exercises.map(ex => (
                 <tr key={ex.exercises_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ex.exercises_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ex.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ex.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -220,6 +223,7 @@ export default function MasterPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス名</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
               </tr>
@@ -227,6 +231,7 @@ export default function MasterPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {statuses.map(st => (
                 <tr key={st.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{st.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{st.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
@@ -256,6 +261,16 @@ export default function MasterPage() {
         title={editingExercise ? '種目を編集' : '新しい種目'}
       >
         <form onSubmit={handleExerciseSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">種目ID (exercises_id)</label>
+            <input
+              type="number"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2"
+              value={exerciseForm.exercises_id}
+              onChange={e => setExerciseForm({ ...exerciseForm, exercises_id: e.target.value })}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">種目名</label>
             <input
@@ -301,6 +316,16 @@ export default function MasterPage() {
         title={editingStatus ? 'ステータスを編集' : '新しいステータス'}
       >
         <form onSubmit={handleStatusSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">ステータスID (id)</label>
+            <input
+              type="text"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2"
+              value={statusForm.id}
+              onChange={e => setStatusForm({ ...statusForm, id: e.target.value })}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">ステータス名</label>
             <input
