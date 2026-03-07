@@ -42,15 +42,15 @@ export default function Home() {
       const overrides: Record<string, string> = {
         'ベンチプレス': '胸',
         'デッドリフト': '背中',
-        'スクワット': '足',
+        'スクワット': '脚',
       }
 
       const latestDatesByPart: Record<string, string> = {}
-      
+
       setsData.forEach(set => {
         const exercise = set.exercise
         const category = overrides[exercise] || exerciseToCategory[exercise]
-        
+
         if (!category) return
 
         if (!latestDatesByPart[category]) {
