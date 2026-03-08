@@ -9,7 +9,8 @@ const mockRoutine: DropsetRoutine = {
   threshold_reps: 10,
   demotion_threshold: 5,
   consecutive_success: 0,
-  consecutive_failure: 0
+  consecutive_failure: 0,
+  sequence_number: 1
 };
 
 console.log('--- Test: Success Path ---');
