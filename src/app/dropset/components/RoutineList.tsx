@@ -4,7 +4,7 @@ import { ExerciseItem } from './ExerciseItem'
 
 interface RoutineListProps {
   routines: DropsetRoutine[]
-  onSave: (routine: DropsetRoutine, reps: number) => Promise<{ success: boolean; message: string | null; error?: string }>
+  onSave: (routine: DropsetRoutine, reps: number, note: string) => Promise<{ success: boolean; message: string | null; error?: string }>
 }
 
 export const RoutineList: React.FC<RoutineListProps> = ({ routines, onSave }) => {

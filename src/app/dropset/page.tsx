@@ -24,8 +24,8 @@ export default function DropsetPage() {
     }
   }, [routineNames, selectedRoutineName])
 
-  const handleSaveSet = async (routine: DropsetRoutine, reps: number): Promise<{ success: boolean; message: string | null; error?: string }> => {
-    const result = await saveSet(routine, reps)
+  const handleSaveSet = async (routine: DropsetRoutine, reps: number, note: string): Promise<{ success: boolean; message: string | null; error?: string }> => {
+    const result = await saveSet(routine, reps, note)
     return {
       success: result.success,
       message: result.message ?? null,

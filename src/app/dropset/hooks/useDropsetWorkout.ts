@@ -31,7 +31,7 @@ export function useDropsetWorkout() {
     fetchRoutines()
   }, [])
 
-  const saveSet = async (routine: DropsetRoutine, reps: number) => {
+  const saveSet = async (routine: DropsetRoutine, reps: number, note: string = '') => {
     const today = getTodayJST()
     
     // 1. 重量更新ロジックの適用
@@ -71,7 +71,7 @@ export function useDropsetWorkout() {
         status: 'メイン', // メインで固定
         exercise_order: finalExerciseOrder,
         set_number: nextSetNumber,
-        note: ''
+        note: note
       }
     ])
 

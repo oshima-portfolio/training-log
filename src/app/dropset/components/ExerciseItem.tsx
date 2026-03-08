@@ -4,11 +4,12 @@ import { getTodayJST } from '@/utils/date'
 
 interface ExerciseItemProps {
   routine: DropsetRoutine
-  onSave: (routine: DropsetRoutine, reps: number) => Promise<{ success: boolean; message: string | null; error?: string }>
+  onSave: (routine: DropsetRoutine, reps: number, note: string) => Promise<{ success: boolean; message: string | null; error?: string }>
 }
 
 export const ExerciseItem: React.FC<ExerciseItemProps> = ({ routine, onSave }) => {
   const [reps, setReps] = useState<string>('')
+  const [note, setNote] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
   const today = getTodayJST()
   const isCompletedToday = routine.is_completed === today
@@ -21,7 +22,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({ routine, onSave }) =
     }
 
     setIsSaving(true)
-    const result = await onSave(routine, repsNum)
+    const result = await onSave(routine, repsNum, note)
     setIsSaving(false)
 
     if (result.success) {
@@ -29,6 +30,7 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({ routine, onSave }) =
         alert(result.message)
       }
       setReps('')
+      setNote('')
     } else {
       alert('保存に失敗しました: ' + result.error)
     }
@@ -60,24 +62,33 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({ routine, onSave }) =
         <div>降格しきい値: {routine.demotion_threshold}回</div>
       </div>
 
-      <div className="flex gap-2">
-        <select
-          className="flex-1 border rounded px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-          value={reps}
-          onChange={(e) => setReps(e.target.value)}
-        >
-          <option value="" disabled>レップ数</option>
-          {Array.from({ length: 50 }, (_, i) => i + 1).map(num => (
-            <option key={num} value={num}>{num} 回</option>
-          ))}
-        </select>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
-        >
-          {isSaving ? '保存中...' : '記録'}
-        </button>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <select
+            className="flex-1 border rounded px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            value={reps}
+            onChange={(e) => setReps(e.target.value)}
+          >
+            <option value="" disabled>レップ数</option>
+            {Array.from({ length: 50 }, (_, i) => i + 1).map(num => (
+              <option key={num} value={num}>{num} 回</option>
+            ))}
+          </select>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
+          >
+            {isSaving ? '保存中...' : '記録'}
+          </button>
+        </div>
+        <input
+          type="text"
+          placeholder="備考 (任意)"
+          className="w-full border rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
       </div>
     </div>
   )
