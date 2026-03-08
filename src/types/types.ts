@@ -127,3 +127,32 @@ export type VolumePoint = {
   volume: number
 }
 
+/**
+ * ドロップセットルーチン情報
+ * データベースのdropset_routinesテーブルに対応
+ */
+export type DropsetRoutine = {
+  /** ルーチンID */
+  id: string
+  /** ルーチン名（例: "DAY1", "DAY2"） */
+  routine_name: string
+  /** 種目名 */
+  exercise: string
+  /** 重量（kg） */
+  weight: number
+  /** 昇格しきい値（rep） */
+  threshold_reps: number
+  /** 降格しきい値（rep） */
+  demotion_threshold: number
+  /** 連続成功数 */
+  consecutive_success: number
+  /** 連続失敗数 */
+  consecutive_failure: number
+  /** 並び順 */
+  sequence_number: number
+  /** 完了日（YYYY-MM-DD） */
+  is_completed?: string | null
+  /** 作成日時 */
+  created_at?: string
+}
+

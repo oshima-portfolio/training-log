@@ -105,6 +105,9 @@ export default function Home() {
         <Link href="/workout" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           💪 筋トレ記録
         </Link>
+        <Link href="/dropset" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-blue-50 transition">
+          🔥 短時間用筋トレ記録
+        </Link>
         <Link href="/weight" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           ⚖️ 体重記録
         </Link>
