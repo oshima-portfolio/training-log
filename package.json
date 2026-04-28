@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^0.0.52",
+    "@ai-sdk/react": "^1.2.12",
     "@supabase/supabase-js": "^2.58.0",
+    "ai": "^3.4.33",
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",

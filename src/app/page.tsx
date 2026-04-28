@@ -117,6 +117,9 @@ export default function Home() {
         <Link href="/history" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           📝 履歴表示
         </Link>
+        <Link href="/chat" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-purple-50 transition">
+          🤖 AIコーチング
+        </Link>
         <Link href="/csv" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           🗂️ CSV出力
         </Link>
