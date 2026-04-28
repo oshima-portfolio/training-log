@@ -1,14 +1,17 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: '/api/chat',
+  const [input, setInput] = useState('');
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/chat' }),
   });
 
+  const isLoading = status === 'submitted' || status === 'streaming';
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -18,6 +21,19 @@ export default function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    
+    const text = input;
+    setInput('');
+    sendMessage({ text });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
@@ -52,7 +68,12 @@ export default function Chat() {
                     ? 'bg-blue-600 text-white rounded-br-none'
                     : 'bg-white border text-gray-800 rounded-bl-none'
                 }`}>
-                  <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                  <div className="whitespace-pre-wrap leading-relaxed">
+                    {m.parts
+                      .filter(part => part.type === 'text')
+                      .map((part: any) => part.text)
+                      .join('')}
+                  </div>
                 </div>
               </div>
             ))}
