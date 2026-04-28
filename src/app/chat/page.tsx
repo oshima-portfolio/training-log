@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function Chat() {
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
   });
 
@@ -83,6 +83,14 @@ export default function Chat() {
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
+            )}
+            {error && (
+              <div className="flex justify-center my-4">
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex flex-col items-center max-w-[90%]">
+                  <p className="font-bold mb-1">エラーが発生しました</p>
+                  <p>{error.message || '通信に失敗しました。時間をおいて再度お試しください。'}</p>
                 </div>
               </div>
             )}
