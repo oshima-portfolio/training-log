@@ -1,10 +1,10 @@
 import { streamText, convertToModelMessages } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGroq } from '@ai-sdk/groq'; // GoogleからGroqに変更
 import { supabase } from '@/lib/supabase';
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-  // baseURLは消した状態でOKです！
+// Groqの初期化
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 export const maxDuration = 30;
@@ -37,15 +37,18 @@ ${context}
 4. 回答は簡潔に、読みやすいフォーマット（マークダウン）を使用する。`;
 
     const result = await streamText({
-      model: google('gemini-2.0-flash'),
+      // モデルを Groq の高性能モデルに変更
+      model: groq('llama-3.3-70b-versatile'),
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
     });
 
+    // streamText の戻り値をレスポンスとして返却
     return result.toUIMessageStreamResponse();
-  } catch (error: any) {
+  } catch (error: unknown) { // anyからunknownに変更（デプロイエラー対策）
     console.error('Error generating AI response:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
