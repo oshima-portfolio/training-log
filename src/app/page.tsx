@@ -17,7 +17,7 @@ type Set = {
   exercise_order: number
 }
 
-// メイン処理
+// 画面表示時に一度だけ実行
 export default function Home() {
   // 部位ごとの放置期間（「胸：3日前」など）を格納するステート
   const [partDaysAgo, setPartDaysAgo] = useState<
@@ -28,7 +28,11 @@ export default function Home() {
 
   // 部位ごとの最終トレーニング日からの経過日数を取得
   useEffect(() => {
-    // 非同期処理asyncでデータ取得
+    /**
+    * 非同期処理asyncでデータ取得
+    * 過去の全記録から各部位の最終トレーニング日を特定し、
+    * 今日までの経過日数を計算して画面を更新する
+    */
     const fetchPartDaysAgo = async () => {
       // 種目マスタを取得
       const { data: exercisesData } = await supabase.from('exercises').select('*')
@@ -54,28 +58,36 @@ export default function Home() {
         'スクワット': '脚',
       }
 
-      // 各部位毎のトレーニング日を記録するための部位(key):日付(value)の辞書を作成（日付はyyyy-mm-dd）
+      // 各部位毎のトレーニング日を記録するためのの辞書を作成 部位(key):日付(value)（日付はyyyy-mm-dd）
       const latestDatesByPart: Record<string, string> = {}
 
+      // 取得した全トレーニング記録(setsData)を1つずつループして解析
       setsData.forEach(set => {
         const exercise = set.exercise
+        // 種目名から部位を特定（BIG3優先ルール → 通常マスタの順で適用）
         const category = overrides[exercise] || exerciseToCategory[exercise]
 
+        // 種目が存在しない場合はそのレコードは強制終了
         if (!category) return
 
+        // 各部位に対しトレーニング日付が無い場合は日付を記載する
         if (!latestDatesByPart[category]) {
           latestDatesByPart[category] = set.date
         } else {
+          // トレーニング日付がより最新の場合は上書きする
           if (new Date(set.date) > new Date(latestDatesByPart[category])) {
             latestDatesByPart[category] = set.date
           }
         }
       })
 
+      // 今日の日付を取得
       const today = new Date(getTodayJST())
-
+      
+      // 辞書をリストに変換し、成型する（例　{"種目:yyyy-mm-dd"}を["胸", "5"])
       const records: { part: string; daysAgo: number }[] = Object.entries(latestDatesByPart).map(([part, date]) => {
         const daysAgo = Math.floor(
+          // 小数点以下切り捨てで何日間トレーニングをしていないか計算する
           (today.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
         )
         return { part, daysAgo }
@@ -84,15 +96,21 @@ export default function Home() {
       // 経過日数が長い順にソート（放置している部位を上に）
       records.sort((a, b) => b.daysAgo - a.daysAgo)
 
+      // 部位ごとの放置期間（「胸：3日前」など）を格納するステートを更新し、画面の再描画
       setPartDaysAgo(records)
     }
 
     fetchPartDaysAgo()
   }, [])
 
-  // 今日の全種目の記録を取得
+  // トレーニングステータスが特定の物の今日の全種目の記録を取得
   useEffect(() => {
+    /**
+     * 今日実施したトレーニングセット（メイン・レストポーズ）を取得し、
+     * 画面の「今日の記録」を更新する
+     */
     const fetchTodaySets = async () => {
+      // 今日の日付を取得
       const today = getTodayJST()
 
       const { data: setsData } = await supabase
@@ -101,6 +119,7 @@ export default function Home() {
         .eq('date', today)
         .in('status', ['メイン', 'レストポーズ'])
 
+      // 今日の記録が存在する場合、トレーニング実施内容（種目・重量・回数など）のリストを格納するステートを更新
       if (setsData) setTodaySets(setsData)
     }
 
