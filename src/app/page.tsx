@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getTodayJST } from '@/utils/date'
 
+// 型定義：DBから取得する「筋トレセット内容」の構造を定義
 type Set = {
   id: string
   date: string
@@ -16,35 +17,44 @@ type Set = {
   exercise_order: number
 }
 
+// メイン処理
 export default function Home() {
+  // 部位ごとの放置期間（「胸：3日前」など）を格納するステート
   const [partDaysAgo, setPartDaysAgo] = useState<
     { part: string; daysAgo: number }[]
   >([])
+  // 今日のトレーニング実施内容（種目・重量・回数など）のリストを格納するステート
   const [todaySets, setTodaySets] = useState<Set[]>([])
 
   // 部位ごとの最終トレーニング日からの経過日数を取得
   useEffect(() => {
+    // 非同期処理asyncでデータ取得
     const fetchPartDaysAgo = async () => {
+      // 種目マスタを取得
       const { data: exercisesData } = await supabase.from('exercises').select('*')
+      // 日付降順でトレーニング記録を取得
       const { data: setsData } = await supabase
         .from('sets')
         .select('*')
         .order('date', { ascending: false })
 
+      // 種目マスタかトレーニング記録のどちらか一方が取得できない場合は強制終了
       if (!exercisesData || !setsData) return
 
+      // 種目マスタから種目名(key):部位(value)の辞書を作成
       const exerciseToCategory: Record<string, string> = {}
       exercisesData.forEach(ex => {
         exerciseToCategory[ex.name] = ex.category
       })
 
-      // BIG3は特定の部位としてカウント
+      // 例外としてBIG3と呼ばれる種目は特定の部位としてべた書きで種目名(key):部位(value)の辞書を作成
       const overrides: Record<string, string> = {
         'ベンチプレス': '胸',
         'デッドリフト': '背中',
         'スクワット': '脚',
       }
 
+      // 各部位毎のトレーニング日を記録するための部位(key):日付(value)の辞書を作成（日付はyyyy-mm-dd）
       const latestDatesByPart: Record<string, string> = {}
 
       setsData.forEach(set => {
