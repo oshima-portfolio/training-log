@@ -18,10 +18,12 @@ import { getTodayJST } from '@/utils/date'
  * - 前回体重の自動セット（デフォルト値）
  */
 export default function WeightForm() {
+  // 画面の移動用の処理
   const router = useRouter()
+  // 日付をyyyy-mm-ddに変換する処理
   const today = getTodayJST()
 
-  // フォーム入力値
+  // フォーム体重入力値
   const [weight, setWeight] = useState('')
 
   // 体重データ（履歴、月次平均、前回体重）
@@ -50,6 +52,7 @@ export default function WeightForm() {
       .limit(1)
       .single()
 
+    // 今日の体重データがある場合は更新、無い場合は新規データを挿入
     let error
     if (existing) {
       // 既存データを更新
@@ -57,15 +60,18 @@ export default function WeightForm() {
         .from('weights')
         .update({ weight: Number(weight) })
         .eq('id', existing.id)
+      // supabase連携が正しくできていればNULLが入る
       error = updateError
     } else {
       // 新規データを挿入
       const { error: insertError } = await supabase
         .from('weights')
         .insert([{ date: today, weight: Number(weight) }])
-      error = insertError
+      // supabase連携が正しくできていればNULLが入る
+        error = insertError
     }
 
+    // supabase連携が正しくできていればNULLが入る
     if (error) {
       alert('登録失敗: ' + error.message)
     } else {
@@ -78,6 +84,7 @@ export default function WeightForm() {
   return (
     <main className="max-w-md mx-auto p-6 space-y-6 bg-white rounded shadow">
       <h1 className="text-xl font-bold">⚖️ 体重記録</h1>
+      {/* 今日の日付をyyyy-mm-dd形式で表示 */}
       <p className="text-gray-600">📅 日付: {today}</p>
 
       {/* 体重入力フォーム */}
@@ -85,14 +92,22 @@ export default function WeightForm() {
         <label htmlFor="weight" className="font-medium">
           体重 (kg)
         </label>
+        {/* 体重選択プルダウン */}
         <select
           id="weight"
+          // ユーザーが選んだ体重であればそれを表示
+          // 選んでいなければ前回の体重を表示
+          // 何もなければ未選択
           value={weight || (lastWeight?.toFixed(1) ?? '')}
+          // 選択した重量を表示
           onChange={e => setWeight(e.target.value)}
           className="border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
+          {/* プルダウンの一番上に表示される選択肢（未選択） */}
           <option value="">選択してください</option>
-          {weightOptions.map(w => (
+          {/* 30.0〜150.0までの選択肢を作成 */}
+          {/* 例：<option key={50.0} value={50.0}> {50.0} </option> */}
+          {weightOptions.map(w => ( 
             <option key={w} value={w}>
               {w}
             </option>
