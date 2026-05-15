@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getTodayJST } from '@/utils/date'
 
-// 型定義：DBから取得する「筋トレセット内容」の構造を定義
+// 今日のトレーニング実施内容（種目・重量・回数など）のリストを格納するステートの内容
 type Set = {
   id: string
   date: string
@@ -128,9 +128,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 space-y-8">
+      {/* { 画面タイトル } */}
       <h1 className="text-2xl font-bold text-gray-800">🏋️ トレーニング記録</h1>
 
+      {/* ｛ メインナビゲーショングリッドレイアウト ｝ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+        {/* { 各リンクボタン } */}
         <Link href="/workout" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           💪 筋トレ記録
         </Link>
@@ -146,7 +149,7 @@ export default function Home() {
         <Link href="/history" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           📝 履歴表示
         </Link>
-        <Link href="/chat" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-purple-50 transition">
+        <Link href="/chat" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
           🤖 AIコーチング
         </Link>
         <Link href="/csv" className="bg-white border rounded-lg shadow hover:shadow-md p-4 text-center hover:bg-red-50 transition">
@@ -163,18 +166,25 @@ export default function Home() {
       {/* 部位ごとの経過日数 */}
       <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
         <h2 className="text-lg font-semibold mb-4">トレーニング頻度</h2>
+        {/* テーブルの大枠 */}
         <table className="min-w-full table-auto border border-gray-300 text-sm">
+        {/* テーブルのカラム */}
           <thead className="bg-gray-100">
             <tr>
               <th className="border px-3 py-2 text-left">部位</th>
               <th className="border px-3 py-2 text-right">経過日数</th>
             </tr>
           </thead>
+          {/* テーブルの中身 */}
           <tbody>
+            {/* もし部位ごとの放置期間のデータがあれば: map を使って、部位の数だけ行を表示
+            もしデータが空なら: 「データがありません」という1行だけのメッセージを表示 */}
             {partDaysAgo.length > 0 ? (
               partDaysAgo.map(record => (
                 <tr key={record.part} className="hover:bg-gray-50">
+                  {/* 部位 */}
                   <td className="border px-3 py-2">{record.part}</td>
+                  {/* 経過日数 */}
                   <td className="border px-3 py-2 text-right">{record.daysAgo} 日前</td>
                 </tr>
               ))
@@ -192,7 +202,9 @@ export default function Home() {
       {/* 今日の記録（全種目） */}
       <div className="bg-white border rounded-lg shadow p-4 w-full max-w-3xl">
         <h2 className="text-lg font-semibold mb-4">今日の記録</h2>
+        {/* テーブルの大枠 */}
         <table className="min-w-full table-auto border border-gray-300 text-sm">
+          {/* テーブルのカラム */}
           <thead className="bg-gray-100">
             <tr>
               <th className="border px-3 py-2 text-left">種目</th>
@@ -201,14 +213,22 @@ export default function Home() {
               <th className="border px-3 py-2 text-right">レップ数</th>
             </tr>
           </thead>
+          {/* テーブルの中身 */}
           <tbody>
+            {/* ソートする為、スプレッド構文で展開 */}
             {[...todaySets]
+              // 一時オブジェクトを種目番号が若い順にソート
               .sort((a, b) => a.exercise_order - b.exercise_order)
+              // mapで表示
               .map((set, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
+                  {/* 種目名 */}
                   <td className="border px-3 py-2">{set.exercise}</td>
+                  {/* 重量 */}
                   <td className="border px-3 py-2 text-right">{set.weight}</td>
+                  {/* セット番号 */}
                   <td className="border px-3 py-2 text-right">{set.set_number ?? '—'}</td>
+                  {/* レップ数 */}
                   <td className="border px-3 py-2 text-right">{set.reps}</td>
                 </tr>
               ))}
