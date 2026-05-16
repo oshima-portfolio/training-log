@@ -41,7 +41,8 @@ export default function WorkoutForm() {
     setExerciseOrder,
     selectedExercise,
     setSelectedExercise,
-    exerciseHistory
+    exerciseHistory,
+    refreshHistory
   } = useWorkoutForm()
 
   // インターバルタイマー
@@ -84,6 +85,9 @@ export default function WorkoutForm() {
 
     // 登録成功
     alert('✅ 記録しました！')
+
+    // 履歴を更新
+    refreshHistory()
 
     // レップ数をクリア
     setReps('')

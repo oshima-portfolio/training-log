@@ -32,6 +32,9 @@ export const useWorkoutForm = () => {
     // === 選択種目の履歴表示用 ===
     const [selectedExercise, setSelectedExercise] = useState('')
     const [exerciseHistory, setExerciseHistory] = useState<WorkoutSet[]>([])
+    const [historyTrigger, setHistoryTrigger] = useState(0)
+
+    const refreshHistory = () => setHistoryTrigger(prev => prev + 1)
 
     /**
      * マスタデータ（種目とステータス）を取得
@@ -138,7 +141,7 @@ export const useWorkoutForm = () => {
         }
 
         fetchExerciseHistory()
-    }, [selectedExercise])
+    }, [selectedExercise, historyTrigger])
 
     return {
         // 日付
@@ -164,6 +167,7 @@ export const useWorkoutForm = () => {
         // 履歴表示用
         selectedExercise,
         setSelectedExercise,
-        exerciseHistory
+        exerciseHistory,
+        refreshHistory
     }
 }
