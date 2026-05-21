@@ -31,11 +31,12 @@ describe('calculatePartDaysAgo', () => {
 
     const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
 
-    expect(sortedParts.map(p => p.part)).toEqual(['背中', '胸', '脚', '肩'])
-    expect(sortedParts[0].daysAgo).toBe(7)
-    expect(sortedParts[1].daysAgo).toBe(2)
-    expect(sortedParts[2].daysAgo).toBe(1)
-    expect(sortedParts[3].daysAgo).toBe(0)
+    expect(sortedParts).toEqual([
+      { part: '背中', daysAgo: 7 }, // 0番目：背中で、かつ7日前
+      { part: '胸',   daysAgo: 2 }, // 1番目：胸で、かつ2日前
+      { part: '脚',   daysAgo: 1 }, // 2番目：脚で、かつ1日前
+      { part: '肩',   daysAgo: 0 }  // 3番目：肩で、かつ0日前
+    ])
   })
 
   it('種目やセットのデータが空の場合は、空の配列を返すこと', () => {
