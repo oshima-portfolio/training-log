@@ -3,8 +3,9 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getTodayJST } from '@/utils/date'
+import { calculatePartDaysAgo } from '@/app/topPageUtil'
 
-// 今日のトレーニング実施内容（種目・重量・回数など）のリストを格納するステートの内容
+// 今日のトレーニング実施内容（種目・重量・回数など）のリストを格納するステートの定義
 type Set = {
   id: string
   date: string
@@ -34,9 +35,10 @@ export default function Home() {
     * 今日までの経過日数を計算して画面を更新する
     */
     const fetchPartDaysAgo = async () => {
+      // 1. Supabaseからデータを取ってくる
       // 種目マスタを取得
       const { data: exercisesData } = await supabase.from('exercises').select('*')
-      // 日付降順でトレーニング記録を取得
+      // トレーニングデータを取得
       const { data: setsData } = await supabase
         .from('sets')
         .select('*')
@@ -45,65 +47,20 @@ export default function Home() {
       // 種目マスタかトレーニング記録のどちらか一方が取得できない場合は強制終了
       if (!exercisesData || !setsData) return
 
-      // 種目マスタから種目名(key):部位(value)の辞書を作成
-      const exerciseToCategory: Record<string, string> = {}
-      exercisesData.forEach(ex => {
-        exerciseToCategory[ex.name] = ex.category
-      })
+      // 2. 今日の日付文字列（YYYY-MM-DD形式など）を取得
+      const todayStr = getTodayJST()
 
-      // 例外としてBIG3と呼ばれる種目は特定の部位としてべた書きで種目名(key):部位(value)の辞書を作成
-      const overrides: Record<string, string> = {
-        'ベンチプレス': '胸',
-        'デッドリフト': '背中',
-        'スクワット': '脚',
-      }
+      // 3. 過去の全記録から各部位の最終トレーニング日を特定し、今日までの経過日数を計算してソートしたリストを返す
+      const records = calculatePartDaysAgo(exercisesData, setsData, todayStr)
 
-      // 各部位毎のトレーニング日を記録するためのの辞書を作成 部位(key):日付(value)（日付はyyyy-mm-dd）
-      const latestDatesByPart: Record<string, string> = {}
-
-      // 取得した全トレーニング記録(setsData)を1つずつループして解析
-      setsData.forEach(set => {
-        const exercise = set.exercise
-        // 種目名から部位を特定（BIG3優先ルール → 通常マスタの順で適用）
-        const category = overrides[exercise] || exerciseToCategory[exercise]
-
-        // 種目が存在しない場合はそのレコードは強制終了
-        if (!category) return
-
-        // 各部位に対しトレーニング日付が無い場合は日付を記載する
-        if (!latestDatesByPart[category]) {
-          latestDatesByPart[category] = set.date
-        } else {
-          // トレーニング日付がより最新の場合は上書きする
-          if (new Date(set.date) > new Date(latestDatesByPart[category])) {
-            latestDatesByPart[category] = set.date
-          }
-        }
-      })
-
-      // 今日の日付を取得
-      const today = new Date(getTodayJST())
-      
-      // 辞書をリストに変換し、成型する（例　{"種目:yyyy-mm-dd"}を["胸", "5"])
-      const records: { part: string; daysAgo: number }[] = Object.entries(latestDatesByPart).map(([part, date]) => {
-        const daysAgo = Math.floor(
-          // 小数点以下切り捨てで何日間トレーニングをしていないか計算する
-          (today.getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24)
-        )
-        return { part, daysAgo }
-      })
-
-      // 経過日数が長い順にソート（放置している部位を上に）
-      records.sort((a, b) => b.daysAgo - a.daysAgo)
-
-      // 部位ごとの放置期間（「胸：3日前」など）を格納するステートを更新し、画面の再描画
+      // 4. 計算結果をステートに入れて画面を再描画
       setPartDaysAgo(records)
     }
 
     fetchPartDaysAgo()
   }, [])
 
-  // トレーニングステータスが特定の物の今日の全種目の記録を取得
+  // 今日のトレーニングステータスがメイン・レストポーズである全種目の記録を取得
   useEffect(() => {
     /**
      * 今日実施したトレーニングセット（メイン・レストポーズ）を取得し、
@@ -120,7 +77,13 @@ export default function Home() {
         .in('status', ['メイン', 'レストポーズ'])
 
       // 今日の記録が存在する場合、トレーニング実施内容（種目・重量・回数など）のリストを格納するステートを更新
-      if (setsData) setTodaySets(setsData)
+      if (setsData){
+        // [...setsData]はスプレッド構文と言うらしい元のデータを汚さずに編集をする為のコピーデータ
+        // .sort((a, b) => a.exercise_order - b.exercise_order)で種目順を比較し、降順にしている
+        const sortedSets = [...setsData].sort((a, b) => a.exercise_order - b.exercise_order)
+        //ステート(setTodaySets)に今日のトレーニング種目をいれるため、画面に反映させる 
+        setTodaySets(sortedSets)
+      }
     }
 
     fetchTodaySets()
@@ -217,8 +180,6 @@ export default function Home() {
           <tbody>
             {/* ソートする為、スプレッド構文で展開 */}
             {[...todaySets]
-              // 一時オブジェクトを種目番号が若い順にソート
-              .sort((a, b) => a.exercise_order - b.exercise_order)
               // mapで表示
               .map((set, idx) => (
                 <tr key={idx} className="hover:bg-gray-50">
