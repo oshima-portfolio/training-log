@@ -1,8 +1,18 @@
 import { calculatePartDaysAgo } from './topPageUtil'
 import { describe, it, expect } from 'vitest'
 
+/*
+ * 過去の全記録から各部位の最終トレーニング日を特定し、
+ * 今日までの経過日数を計算して降順にソートしたリストを返す関数
+ * 
+ * 引数は以下
+ * exercisesData :データ型:{ name: 文字型, category: 文字型 }
+ * sets          :データ型:{ exercise: 文字型, date: 文字型 }
+ * DatatodayStr  :文字型(yyyy-mm-dd)
+ * 
+*/
 describe('calculatePartDaysAgo', () => {
-  it('should sort parts by daysAgo in descending order', () => {
+  it('経過日数が長い順（降順）に部位がソートされること', () => {
     const exercisesData = [
       { name: '種目A', category: '胸' },
       { name: '種目B', category: '背中' },
@@ -27,4 +37,15 @@ describe('calculatePartDaysAgo', () => {
     expect(sortedParts[2].daysAgo).toBe(1)
     expect(sortedParts[3].daysAgo).toBe(0)
   })
+
+  it('種目やセットのデータが空の場合は、空の配列を返すこと', () => {
+    const exercisesData: any[] = []
+    const setsData: any[] = []
+    const todayStr = '2024-01-10'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
+
+    expect(sortedParts).toEqual([])
+  })
+
 })

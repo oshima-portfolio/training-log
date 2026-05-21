@@ -5,9 +5,11 @@ export type ExerciseMaster = {
     category: string
 }
 
+// トレーニング記録 
 export type RawSet = {
     exercise: string
     date: string
+    // 種目と日付以外のデータは何であっても許容する
     [key: string]: any
 }
 

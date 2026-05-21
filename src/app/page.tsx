@@ -47,7 +47,7 @@ export default function Home() {
       // 種目マスタかトレーニング記録のどちらか一方が取得できない場合は強制終了
       if (!exercisesData || !setsData) return
 
-      // 2. 今日の日付文字列（YYYY-MM-DD形式など）を取得
+      // 2. 今日の日付文字列（YYYY-MM-DD形式）を取得
       const todayStr = getTodayJST()
 
       // 3. 過去の全記録から各部位の最終トレーニング日を特定し、今日までの経過日数を計算してソートしたリストを返す
