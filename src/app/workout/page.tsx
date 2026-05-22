@@ -92,7 +92,7 @@ export default function WorkoutForm() {
     // 登録成功
     alert('✅ 記録しました！')
 
-    // 履歴を更新
+    // 選択種目の履歴テーブルを更新する関数を実行
     refreshHistory()
 
     // レップ数をクリア
@@ -100,6 +100,7 @@ export default function WorkoutForm() {
 
     // メインセットの場合、セット番号を増やしてタイマーを再開
     if (status === 'メイン') {
+      // 再描画の際に変数が狂わないようにprevを使った記述にするらしい
       setSetNumber(prev => String(Number(prev) + 1))
       resetTimer()
       startTimer()

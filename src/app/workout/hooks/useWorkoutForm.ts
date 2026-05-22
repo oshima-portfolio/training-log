@@ -34,6 +34,10 @@ export const useWorkoutForm = () => {
     const [exerciseHistory, setExerciseHistory] = useState<WorkoutSet[]>([])
     const [historyTrigger, setHistoryTrigger] = useState(0)
 
+    // いつ見てみ気持ち悪い
+    // function refreshHistory() {
+    //     return setHistoryTrigger(prev => prev + 1)
+    // }
     const refreshHistory = () => setHistoryTrigger(prev => prev + 1)
 
     /**
