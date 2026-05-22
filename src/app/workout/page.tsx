@@ -66,7 +66,7 @@ export default function WorkoutForm() {
    * const 処理名 = 非同期か否か(ここに引数) => {処理}
    */
   const handleSubmit = async () => {
-    // バリデーション
+    // フォームの必須項目が入り切っていない場合、強制終了
     if (!validateWorkoutForm(exercise, status, weight, reps, exerciseOrder, setNumber)) {
       alert('⚠️ 必須項目が未入力です。すべて入力してください。')
       return
