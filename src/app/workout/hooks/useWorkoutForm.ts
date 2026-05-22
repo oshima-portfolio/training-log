@@ -17,6 +17,7 @@ export const useWorkoutForm = () => {
     const today = getTodayJST()
 
     // === マスタデータ ===
+    // const [箱, 変更箱] = 箱と変更箱を紐づける関数<入れる配列名[]>(空の配列からスタート)
     const [exercises, setExercises] = useState<Exercise[]>([])
     const [statuses, setStatuses] = useState<Status[]>([])
 
@@ -34,10 +35,15 @@ export const useWorkoutForm = () => {
     const [exerciseHistory, setExerciseHistory] = useState<WorkoutSet[]>([])
     const [historyTrigger, setHistoryTrigger] = useState(0)
 
-    // いつ見てみ気持ち悪い
-    // function refreshHistory() {
-    //     return setHistoryTrigger(prev => prev + 1)
-    // }
+    /**
+     * いつ見てみも気持ち悪い
+     * function refreshHistory() {        
+     *     function updateCounter(prev) {
+     *         return prev + 1;
+     *     }
+     *     return setHistoryTrigger(updateCounter);
+     * }
+     */
     const refreshHistory = () => setHistoryTrigger(prev => prev + 1)
 
     /**
