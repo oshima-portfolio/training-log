@@ -19,18 +19,18 @@ describe('calculatePartDaysAgo', () => {
       { name: '種目C', category: '脚' },
       { name: '種目D', category: '肩' },
     ]
-
+    
     const setsData = [
       { exercise: '種目A', date: '2024-01-08' }, // 胸: 2日前
       { exercise: '種目B', date: '2024-01-03' }, // 背中: 7日前
       { exercise: '種目C', date: '2024-01-09' }, // 脚: 1日前
       { exercise: '種目D', date: '2024-01-10' }, // 肩: 今日
     ]
-
+    
     const todayStr = '2024-01-10'
-
+    
     const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
-
+    
     expect(sortedParts).toEqual([
       { part: '背中', daysAgo: 7 }, // 0番目：背中で、かつ7日前
       { part: '胸',   daysAgo: 2 }, // 1番目：胸で、かつ2日前
@@ -39,9 +39,28 @@ describe('calculatePartDaysAgo', () => {
     ])
   })
 
-  // === 異常系：明らかに不正な入力や操作に対し、エラーが適切に返されるか ===
-  // ※ 現状は前段階のガード句や空配列の安全処理でカバーしているため保留、必要に応じて追記
+  it('同一部位に対して複数の日付の記録が存在する場合、最も新しい日付の記録を採用して経過日数を計算すること', () => {
+    const exercisesData = [
+      { name: 'ダンベルフライ', category: '胸' },
+      { name: 'ベンチプレス', category: '胸' }
+    ]
 
+    // 順序がバラバラな複数のセットデータを用意する
+    const setsData = [
+      { exercise: 'ダンベルフライ', date: '2024-01-05' }, // 胸: 5日前
+      { exercise: 'ベンチプレス', date: '2024-01-08' },   // 胸: 2日前 (最新)
+      { exercise: 'ダンベルフライ', date: '2024-01-03' }, // 胸: 7日前
+    ]
+    const todayStr = '2024-01-10'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
+
+    // 最も新しい 2024-01-08 (2日前) が採用されていること
+    expect(sortedParts).toEqual([
+      { part: '胸', daysAgo: 2 }
+    ])
+  })
+ 
   // === 準正常系：有効だが境界に近い、あるいは例外的な入力に対して正しく動作するか ===
   it('種目やセットのデータが空の場合は、空の配列を返すこと', () => {
     const exercisesData: any[] = []
@@ -73,4 +92,77 @@ describe('calculatePartDaysAgo', () => {
     ])
   })
 
+  it('種目マスタに定義されておらず、かつBIG3にも該当しない不明な種目のレコードは無視されること', () => {
+    const exercisesData = [
+      { name: 'ベンチプレス', category: '胸' }
+    ]
+
+    const setsData = [
+      { exercise: 'ベンチプレス', date: '2024-01-08' }, // 胸: 2日前
+      { exercise: '謎のトレーニング', date: '2024-01-01' }, // マスタなし・BIG3でもない
+    ]
+    const todayStr = '2024-01-10'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
+
+    // 不明な種目がスキップされ、ベンチプレス（胸）のみ計算されること
+    expect(sortedParts).toEqual([
+      { part: '胸', daysAgo: 2 }
+    ])
+  })
+
+  // === 異常系：明らかに不正な入力や操作に対し、エラーが適切に返されるか ===
+  it('セットデータの「日付（date）」が欠損している、または無効な日付文字列である場合、そのレコードは無視されること', () => {
+    const exercisesData = [
+      { name: 'ベンチプレス', category: '胸' }
+    ]
+
+    const setsData = [
+      { exercise: 'ベンチプレス', date: 'invalid-date' }, // 無効な日付
+      { exercise: 'ベンチプレス', date: '' },             // 空文字
+      { exercise: 'ベンチプレス' },                       // date欠損 (undefined)
+      { exercise: 'ベンチプレス', date: '2024-01-08' },  // 正常データ (2日前)
+    ]
+    const todayStr = '2024-01-10'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData as any, todayStr)
+
+    // 無効な日付レコードがスキップされ、正常なレコードのみから経過日数が計算されていること
+    expect(sortedParts).toEqual([
+      { part: '胸', daysAgo: 2 }
+    ])
+  })
+
+  it('セットデータの「種目（exercise）」が欠損している場合、そのレコードは無視されること', () => {
+    const exercisesData = [
+      { name: 'ベンチプレス', category: '胸' }
+    ]
+
+    const setsData = [
+      { date: '2024-01-08' }, // exercise欠損 (undefined)
+      { exercise: 'ベンチプレス', date: '2024-01-08' } // 正常 (2日前)
+    ]
+    const todayStr = '2024-01-10'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData as any, todayStr)
+
+    // 種目名がないレコードが安全に無視されること
+    expect(sortedParts).toEqual([
+      { part: '胸', daysAgo: 2 }
+    ])
+  })
+
+  it('基準日（todayStr）が無効な日付文字列である場合、空の配列を返すこと', () => {
+    const exercisesData = [
+      { name: 'ベンチプレス', category: '胸' }
+    ]
+    const setsData = [
+      { exercise: 'ベンチプレス', date: '2024-01-08' }
+    ]
+    const todayStr = 'invalid-today'
+
+    const sortedParts = calculatePartDaysAgo(exercisesData, setsData, todayStr)
+
+    expect(sortedParts).toEqual([])
+  })
 })

@@ -96,4 +96,73 @@ describe('トップページ（Home）の結合テスト', () => {
       expect(screen.getByText('8')).toBeInTheDocument()  // レップ数
     })
   })
+
+  it('Supabaseからのデータが空の場合に、「データがありません」と表示されること', async () => {
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      const mockQuery: any = {
+        select: vi.fn().mockImplementation(() => mockQuery),
+        order: vi.fn().mockImplementation(() => mockQuery),
+        eq: vi.fn().mockImplementation(() => mockQuery),
+        in: vi.fn().mockImplementation(() => mockQuery),
+        then: (onfulfilled: any) => {
+          return onfulfilled({
+            data: [],
+            error: null
+          })
+        }
+      }
+      return mockQuery
+    })
+
+    render(<Home />)
+
+    await waitFor(() => {
+      expect(screen.getByText('データがありません')).toBeInTheDocument()
+    })
+
+    // 今日の記録テーブルには種目が表示されていないこと
+    expect(screen.queryByText('ベンチプレス')).not.toBeInTheDocument()
+  })
+
+  it('各機能へのナビゲーションリンクが正しく表示され、正しいhrefを持っていること', async () => {
+    render(<Home />)
+
+    await waitFor(() => {
+      const workoutLink = screen.getByText('💪 筋トレ記録')
+      expect(workoutLink).toBeInTheDocument()
+      expect(workoutLink.closest('a')).toHaveAttribute('href', '/workout')
+
+      const dropsetLink = screen.getByText('🔥 短時間用筋トレ記録')
+      expect(dropsetLink).toBeInTheDocument()
+      expect(dropsetLink.closest('a')).toHaveAttribute('href', '/dropset')
+
+      const weightLink = screen.getByText('⚖️ 体重記録')
+      expect(weightLink).toBeInTheDocument()
+      expect(weightLink.closest('a')).toHaveAttribute('href', '/weight')
+
+      const chartLink = screen.getByText('📊 グラフ表示')
+      expect(chartLink).toBeInTheDocument()
+      expect(chartLink.closest('a')).toHaveAttribute('href', '/chart')
+
+      const historyLink = screen.getByText('📝 履歴表示')
+      expect(historyLink).toBeInTheDocument()
+      expect(historyLink.closest('a')).toHaveAttribute('href', '/history')
+
+      const chatLink = screen.getByText('🤖 AIコーチング')
+      expect(chatLink).toBeInTheDocument()
+      expect(chatLink.closest('a')).toHaveAttribute('href', '/chat')
+
+      const csvLink = screen.getByText('🗂️ CSV出力')
+      expect(csvLink).toBeInTheDocument()
+      expect(csvLink.closest('a')).toHaveAttribute('href', '/csv')
+
+      const masterLink = screen.getByText('🛠️ マスタ管理')
+      expect(masterLink).toBeInTheDocument()
+      expect(masterLink.closest('a')).toHaveAttribute('href', '/master')
+
+      const developLink = screen.getByText('🧪 実験用ページ')
+      expect(developLink).toBeInTheDocument()
+      expect(developLink.closest('a')).toHaveAttribute('href', '/develop')
+    })
+  })
 })

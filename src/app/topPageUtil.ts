@@ -41,6 +41,11 @@ export function calculatePartDaysAgo(
     // 取得した全トレーニング記録(setsData)を1つずつループして解析
     setsData.forEach(set => {
         const exercise = set.exercise
+        if (!exercise) return
+
+        // 日付がない、または無効な日付の場合はスキップ
+        if (!set.date || isNaN(new Date(set.date).getTime())) return
+
         // 種目名から部位を特定（BIG3優先ルール → 通常マスタの順で適用）
         const category = overrides[exercise] || exerciseToCategory[exercise]
 
@@ -60,6 +65,7 @@ export function calculatePartDaysAgo(
 
     // 今日の日付を取得
     const today = new Date(todayStr)
+    if (isNaN(today.getTime())) return []
 
     // 経過日数を計算
     const records = Object.entries(latestDatesByPart).map(([part, date]) => {
