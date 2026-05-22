@@ -18,13 +18,16 @@ import { validateWorkoutForm, submitWorkoutData } from './utils/workoutHelpers'
  * - メインセットの自動値設定（前回重量、セット番号）
  */
 export default function WorkoutForm() {
+  // ページ遷移用の部品を定義
   const router = useRouter()
 
   // フォーム状態管理
   const {
+    // 表示用データ（基本は書き換えないもの）
     today,
     exercises,
     statuses,
+    // ステート(値が変わると画面が自動で再描画される)
     exercise,
     setExercise,
     status,
@@ -47,8 +50,10 @@ export default function WorkoutForm() {
 
   // インターバルタイマー
   const {
+    // 現在のタイマーの状態
     remaining,
     isRunning,
+    // タイマーを動かすためのスイッチ
     startTimer,
     stopTimer,
     resetTimer,
@@ -58,6 +63,7 @@ export default function WorkoutForm() {
   /**
    * フォーム送信ハンドラ
    * バリデーション → データ保存 → フォームリセット → タイマー再開
+   * const 処理名 = 非同期か否か(ここに引数) => {処理}
    */
   const handleSubmit = async () => {
     // バリデーション
