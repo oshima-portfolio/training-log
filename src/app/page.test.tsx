@@ -1,4 +1,6 @@
+// 細かい型チェックを飛ばす、環境内で競合してしまっている為仕方なく記載
 // @ts-nocheck
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
