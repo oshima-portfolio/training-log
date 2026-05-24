@@ -63,7 +63,8 @@ export const useWorkoutForm = () => {
                 .from('statuses')
                 .select('*')
                 .order('statuses_id', { ascending: true })
-
+            
+            //各ステートに対して、データがあれば入れる、無ければ空を入れる
             setExercises(ex ?? [])
             setStatuses(st ?? [])
         }
@@ -71,21 +72,26 @@ export const useWorkoutForm = () => {
     }, [])
 
     /**
+     * 画面にて、種目、ステータス、重量、レップ、日付が変わった際に実行される処理
      * 種目順序（exercise_order）を自動設定
      * 今日の記録数に基づいて次の順序番号を設定します
      */
     useEffect(() => {
         const fetchOrder = async () => {
+            // 今日行ったトレーニングセット数を知りたいためIDだけ取得
             const { data } = await supabase
                 .from('sets')
                 .select('id')
                 .eq('date', today)
 
+            // 今日行ったトレーニングセット数をカウント、何も行っていなければ0を入れる
             const count = data?.length ?? 0
+            // 次のトレーニングセット数にする為＋1する
             setExerciseOrder(String(count + 1))
         }
 
         fetchOrder()
+    // ユーザーが画面で表示している内容が変わっていないか監視する
     }, [exercise, status, weight, reps, today])
 
     /**
