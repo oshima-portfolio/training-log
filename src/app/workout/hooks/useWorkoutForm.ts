@@ -44,6 +44,7 @@ export const useWorkoutForm = () => {
      *     return setHistoryTrigger(updateCounter);
      * }
      */
+    // 仮想DOM(prev)のsetHistoryTriggerを見ている為、確実に正しい値に更新できるらしい
     const refreshHistory = () => setHistoryTrigger(prev => prev + 1)
 
     /**
@@ -92,9 +93,10 @@ export const useWorkoutForm = () => {
 
         fetchOrder()
     // ユーザーが画面で表示している内容が変わっていないか監視する
-    }, [exercise, status, weight, reps, today])
+    }, [exercise, status, today])
 
     /**
+     * 画面にて、種目、ステータス、日付が変わった際に実行される処理
      * メインセットの自動値設定
      * ステータスが「メイン」の場合、前回の重量とセット番号を自動設定します
      */
@@ -111,9 +113,10 @@ export const useWorkoutForm = () => {
                 .eq('status', 'メイン')
                 .order('date', { ascending: false })
 
+            // データ取得が行えなかった場合はundefinedになる
             const previous = previousData?.[0]
 
-            // 前回データがあれば重量を自動設定
+            // 前回データがあれば重量を自動設定※undefinedの場合はelseに入る
             if (previous) {
                 setWeight(String(previous.weight))
             } else {
@@ -128,11 +131,13 @@ export const useWorkoutForm = () => {
                 .eq('exercise', exercise)
                 .eq('status', 'メイン')
 
+            // データ取得が行えなかった場合はundefinedになる
             const count = todayData?.length ?? 0
             setSetNumber(String(count + 1))
         }
 
         fetchAutoValues()
+    // ユーザーが画面で表示している内容が変わっていないか監視する
     }, [status, exercise, today])
 
     /**

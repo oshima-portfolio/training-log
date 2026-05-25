@@ -100,7 +100,7 @@ export default function WorkoutForm() {
 
     // メインセットの場合、セット番号を増やしてタイマーを再開
     if (status === 'メイン') {
-      // 再描画の際に変数が狂わないようにprevを使った記述にするらしい
+      // 再描画の際に変数が狂わないように仮想DOM(prev)を使った記述にするらしい
       setSetNumber(prev => String(Number(prev) + 1))
       resetTimer()
       startTimer()
