@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# システム概要書 & セットアップガイド (README)
 
-## Getting Started
+本ドキュメントは、「Training Log」アプリケーションの全体像、使用している技術スタック、および開発環境の構築手順について説明します。
 
-First, run the development server:
+---
+
+## 1. システム概要
+「Training Log」は、日々の筋力トレーニング記録（種目、重量、レップ数、セット数、備考）と体重を記録・蓄積し、データ分析やAIによるコーチングを通じて、利用者のトレーニング進捗管理を支援するWebアプリケーションです。
+
+### 主な機能
+1. **ダッシュボード**: 部位ごとの最終トレーニング日からの経過日数（頻度管理）と、今日のトレーニング記録を一覧表示。
+2. **筋トレ記録**: 通常のセット単位でのトレーニング内容の記録。インターバルタイマーの連動、過去履歴の即時参照。
+3. **短時間用筋トレ記録 (ドロップセットルーチン)**: 登録されたルーチンに沿って記録を行い、結果（レップ数）に応じて次回重量を自動増減。
+4. **体重記録**: 体重の入力と、前週比・先月比・月別平均体重の確認。
+5. **データ分析 (グラフ表示)**: 総負荷量、最大重量、推定1RM、セット数の推移をグラフで可視化。
+6. **履歴表示**: 過去の全記録の一覧表示、フィルタリング、編集・削除。
+7. **AIコーチング**: 保存された直近のトレーニング記録をコンテキストとして、AIトレーナーからアドバイスを受けるチャット機能。
+8. **CSV出力**: 記録データをCSV形式でエクスポート。
+9. **マスタ管理**: トレーニング種目およびステータスの追加・編集・削除。
+
+---
+
+## 2. 技術スタック
+
+### フロントエンド
+- **フレームワーク**: Next.js 15.0.3 (App Router)
+- **言語**: TypeScript 5
+- **スタイリング**: Tailwind CSS 3.4.1
+- **UIライブラリ / チャート**: Chart.js (`react-chartjs-2`), Lucide React (アイコン)
+- **日付処理**: `date-fns`
+- **CSV処理**: `papaparse`（型定義 `@types/papaparse`）
+- **AI連携**: Vercel AI SDK (`ai`, `@ai-sdk/react`, `@ai-sdk/groq`)
+
+### バックエンド / データベース
+- **BaaS (Backend as a Service)**: Supabase
+- **データベース**: PostgreSQL
+- **外部AI API**: Groq API (モデル: `llama-3.3-70b-versatile`)
+
+---
+
+## 3. ディレクトリ構成
+主要なソースコードは `src/` 配下に格納されています。
+
+```text
+src/
+├── app/                  # App Routerによるページ定義とAPIルート
+│   ├── api/chat/         # AIチャット用のAPIエンドポイント
+│   ├── chart/            # グラフ表示・データ分析画面
+│   ├── chat/             # AIコーチング画面
+│   ├── csv/              # CSVエクスポート画面
+│   ├── develop/          # 技術実験用（バイブ・音声再生など）のテスト画面
+│   ├── dropset/          # 短時間用筋トレ記録画面
+│   ├── history/          # トレーニング履歴表示・編集画面
+│   ├── master/           # マスタ管理（種目・ステータス）画面
+│   ├── weight/           # 体重記録画面
+│   ├── workout/          # 筋トレ記録画面
+│   ├── globals.css       # グローバルCSS
+│   ├── layout.tsx        # ルートレイアウト
+│   ├── page.tsx          # ダッシュボード（トップページ）
+│   └── topPageUtil.ts    # 部位別経過日数計算ユーティリティ
+├── components/           # 複数画面で共有されるUIコンポーネント（チャート、モーダル等）
+├── lib/                  # 外部サービスの設定（Supabaseクライアントの初期化等）
+├── types/                # アプリケーション共通のTypeScript型定義 (types.ts)
+└── utils/                # 共通ユーティリティ（日付処理など）
+```
+
+---
+
+## 4. 環境構築 & 起動手順
+
+### 前提条件
+- Node.js (v18以上推奨)
+- npm または yarn / pnpm
+
+### 1. 依存関係のインストール
+プロジェクトのルートディレクトリで以下のコマンドを実行します。
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+ルートディレクトリに `.env.local` ファイルを作成し、以下の環境変数を設定します。
+
+```env
+# Supabase接続情報
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Groq API接続情報 (AIチャット用)
+GROQ_API_KEY=your_groq_api_key
+```
+
+### 3. ローカル開発サーバーの起動
+以下のコマンドで開発用ローカルサーバーを起動します。
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+起動後、ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスします。
