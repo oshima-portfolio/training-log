@@ -39,7 +39,8 @@ export default function WeightForm() {
    * 既に今日の記録がある場合は更新、ない場合は新規登録します
    */
   const handleSubmit = async () => {
-    if (!weight) {
+    const finalWeight = weight || (lastWeight?.toFixed(1) ?? '')
+    if (!finalWeight) {
       alert('体重を選択してください')
       return
     }
@@ -58,7 +59,7 @@ export default function WeightForm() {
       // 既存データを更新
       const { error: updateError } = await supabase
         .from('weights')
-        .update({ weight: Number(weight) })
+        .update({ weight: Number(finalWeight) })
         .eq('id', existing.id)
       // supabase連携が正しくできていればNULLが入る
       error = updateError
@@ -66,7 +67,7 @@ export default function WeightForm() {
       // 新規データを挿入
       const { error: insertError } = await supabase
         .from('weights')
-        .insert([{ date: today, weight: Number(weight) }])
+        .insert([{ date: today, weight: Number(finalWeight) }])
       // supabase連携が正しくできていればNULLが入る
         error = insertError
     }

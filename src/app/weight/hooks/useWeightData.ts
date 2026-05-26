@@ -50,9 +50,9 @@ export const useWeightData = (today: string) => {
             const filtered = filterRecentMonth(enriched)
             setHistory(filtered)
 
-            // 前回体重をセット（今日以外で最新のもの）
-            const previous = data.find(e => e.date !== today)
-            if (previous) setLastWeight(previous.weight)
+            // 一番新しいレコードの体重をセット
+            const latest = data[0]
+            if (latest) setLastWeight(latest.weight)
 
             // 月別平均を計算
             const averages = calculateMonthlyAverages(data)
