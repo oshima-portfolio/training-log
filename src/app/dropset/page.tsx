@@ -44,7 +44,7 @@ export default function DropsetPage() {
         <h1 className="text-2xl font-bold text-gray-800">🔥 短時間用筋トレ記録</h1>
         <button
           onClick={() => router.back()}
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
           戻る
         </button>
